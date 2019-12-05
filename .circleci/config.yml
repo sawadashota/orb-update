@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  docker: circleci/docker@0.5.19
+
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - checkout
+      - run: go mod download
+      - run: go mod verify
+      - run: go test -race -coverprofile=coverage.txt -covermode=atomic
+      - run: go tool cover -html coverage.txt -o coverage.html
+      - run:
+          name: Send result codecov
+          command: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
+      - store_test_results:
+          path: coverage.html
+  release-binary:
+    docker:
+      - image: goreleaser/goreleaser:v0.123
+    steps:
+      - checkout
+      - run: go mod download
+      - run: go mod verify
+      - run: goreleaser
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+      - docker/publish:
+          deploy: false
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+      - docker/hadolint
+  release:
+    jobs:
+      - release-binary:
+          filters: &release_filter
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - docker/publish:
+          filters: *release_filter
+          deploy: true
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: ${CIRCLE_TAG}
+          docker-username: DOCKER_LOGIN
+          docker-password: DOCKER_PASSWORD

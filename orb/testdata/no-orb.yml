@@ -1,0 +1,6 @@
+job:
+  example:
+    docker:
+      - image: example
+    steps:
+      - run: echo "Hello World"

@@ -1,0 +1,10 @@
+orbs:
+  example01: example@3.4.1
+  example02: example
+
+job:
+  example:
+    docker:
+      - image: example
+    steps:
+      - run: echo "Hello World"
