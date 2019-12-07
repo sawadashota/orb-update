@@ -35,8 +35,20 @@ workflows:
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-      - docker/hadolint
-  release:
+      - docker/hadolint:
+          ignore-rules: DL3018
+  release-master:
+    jobs:
+      - docker/publish:
+          filters:
+            branches:
+              only: master
+          deploy: true
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: latest
+          docker-username: DOCKER_LOGIN
+          docker-password: DOCKER_PASSWORD
+  release-version:
     jobs:
       - release-binary:
           filters: &release_filter
