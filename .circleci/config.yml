@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  docker: circleci/docker@0.5.19
+  docker: circleci/docker@0.5.18
 
 jobs:
   test:
@@ -11,13 +11,14 @@ jobs:
       - checkout
       - run: go mod download
       - run: go mod verify
-      - run: go test -race -coverprofile=coverage.txt -covermode=atomic
+      - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       - run: go tool cover -html coverage.txt -o coverage.html
       - run:
           name: Send result codecov
           command: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
-      - store_test_results:
+      - store_artifacts:
           path: coverage.html
+          destination: coverage.html
   release-binary:
     docker:
       - image: goreleaser/goreleaser:v0.123
