@@ -41,7 +41,7 @@ func (cf *ConfigFile) reader() io.Reader {
 	return bytes.NewReader(cf.bytes)
 }
 
-// Parse config file
+// Parse configuration file
 func (cf *ConfigFile) Parse() (*Config, error) {
 	var mapConfig struct {
 		Orbs map[string]string
@@ -63,18 +63,16 @@ func (cf *ConfigFile) Parse() (*Config, error) {
 	return &config, nil
 }
 
-func (cf *ConfigFile) Update(w io.Writer, newVersions ...*Orb) error {
+func (cf *ConfigFile) Update(w io.Writer, newVersion *Orb) error {
 	var b bytes.Buffer
 
 	scan := bufio.NewScanner(cf.reader())
 	for scan.Scan() {
 		func() {
-			for _, newVersion := range newVersions {
-				if strings.Contains(scan.Text(), fmt.Sprintf("%s/%s@", newVersion.Namespace(), newVersion.Name())) {
-					b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+newVersion.Version()))
-					b.WriteString("\n")
-					return
-				}
+			if strings.Contains(scan.Text(), fmt.Sprintf("%s/%s@", newVersion.Namespace(), newVersion.Name())) {
+				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+newVersion.Version()))
+				b.WriteString("\n")
+				return
 			}
 			b.Write(scan.Bytes())
 			b.WriteString("\n")
