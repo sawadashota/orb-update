@@ -1,0 +1,7 @@
+export GIT_USERNAME=
+export GIT_EMAIL=
+
+export GITHUB_USERNAME=
+export GITHUB_TOKEN=
+
+export TARGET_BRANCH=
