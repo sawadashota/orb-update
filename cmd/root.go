@@ -1,17 +1,24 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
+	"github.com/sawadashota/orb-update/driver"
+
+	"github.com/sawadashota/orb-update/pullrequest"
+
 	"github.com/sawadashota/orb-update/orb"
+
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func RootCmd() *cobra.Command {
 	var filePath string
+	var repo string
 
 	c := &cobra.Command{
 		Use:     "orb-update",
@@ -54,42 +61,66 @@ func RootCmd() *cobra.Command {
 			}
 			reader.Close()
 
-			conf, err := cf.Parse()
+			diffs, err := parse(cf, filePath)
 			if err != nil {
 				return err
 			}
 
-			cl := orb.NewDefaultClient()
-			newVersions := make([]*orb.Orb, 0, len(conf.Orbs))
-			for _, o := range conf.Orbs {
-				newVersion, err := cl.LatestVersion(o)
-				if err != nil {
-					return err
-				}
-
-				if o.Version() != newVersion.Version() {
-					_, _ = fmt.Fprintf(os.Stdout, "Updating %s/%s (%s => %s)\n", o.Namespace(), o.Name(), o.Version(), newVersion.Version())
-				}
-
-				newVersions = append(newVersions, newVersion)
+			if len(diffs) == 0 {
+				return nil
 			}
 
-			// overwrite the config file
+			// overwrite the configuration file
 			writer, err := os.Create(path)
 			if err != nil {
 				return err
 			}
 			defer writer.Close()
 
-			if len(newVersions) == 0 {
-				return nil
+			for _, diff := range diffs {
+				_, _ = fmt.Fprintf(
+					os.Stdout,
+					"Updating %s/%s (%s => %s)\n",
+					diff.New.Namespace(),
+					diff.New.Name(),
+					diff.Old.Version(),
+					diff.New.Version(),
+				)
+
+				if err := cf.Update(writer, diff.New); err != nil {
+					return err
+				}
+
+				if repo == "" {
+					continue
+				}
+
+				d := driver.NewDefaultDriver()
+
+				r, err := parseRepository(repo)
+				if err != nil {
+					return err
+				}
+
+				ctx := context.Background()
+				pr, err := pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
+				if err != nil {
+					return err
+				}
+
+				message := fmt.Sprintf("Bump %s/%s from %s to %s\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
+				message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Old.Namespace(), diff.Old.Name())
+				if err := pr.Create(ctx, message); err != nil {
+					return err
+				}
 			}
 
-			return cf.Update(writer, newVersions...)
+			return nil
 		},
 	}
 
 	c.Flags().StringVarP(&filePath, "file", "f", ".circleci/config.yml", "target config file path")
+	c.Flags().StringVarP(&repo, "repo", "r", "", "GitHub Repository to create Pull Request")
 
 	return c
 }
