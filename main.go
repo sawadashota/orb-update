@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/src-d/go-billy.v4/memfs"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
-	"os"
 	"time"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing"
+
+	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 func main() {
@@ -25,10 +25,10 @@ func main() {
 
 func run() ([]byte, error) {
 	// open
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
+	//pwd, err := os.Getwd()
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	//repo, err := git.PlainOpen(pwd)
 
