@@ -44,7 +44,8 @@ func run() ([]byte, error) {
 
 	// checkout
 	branch := "test-" + time.Now().String()
-	ref := plumbing.ReferenceName(branch)	err = repo.CreateBranch(&config.Branch{
+	ref := plumbing.ReferenceName(branch)
+	err = repo.CreateBranch(&config.Branch{
 		Name:   branch,
 		Merge:  "refs/heads/exp",
 	})
