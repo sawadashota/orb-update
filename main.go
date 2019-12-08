@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -42,13 +43,21 @@ func run() ([]byte, error) {
 
 	// checkout
 	branch := "test-" + time.Now().String()
+	ref := plumbing.ReferenceName(branch)
+
 	err = w.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.ReferenceName(branch),
+		Branch: ref
 		Create: true,
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	br, err := repo.Branch(branch)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(br.Name)
 
 	// create file
 	f, err := os.Create(".test.txt")
@@ -75,7 +84,6 @@ func run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	//ref := plumbing.ReferenceName(branch)
 
 	return nil, nil
 }
