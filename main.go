@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/src-d/go-git.v4/config"
 	"os"
 	"time"
 
@@ -48,19 +47,18 @@ func run() ([]byte, error) {
 	// checkout
 	branch := "test-" + time.Now().String()
 	ref := plumbing.ReferenceName(branch)
-	err = repo.CreateBranch(&config.Branch{
-		Name:   branch,
-		Remote: "origin",
-		Merge:  plumbing.ReferenceName("refs/heads/" + branch),
-
-	})
-	if err != nil {
-		return nil, err
-	}
+	//err = repo.CreateBranch(&config.Branch{
+	//	Name:   branch,
+	//	Remote: "origin",
+	//	Merge:  plumbing.ReferenceName("refs/heads/" + branch),
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	err = w.Checkout(&git.CheckoutOptions{
 		Branch: ref,
-		//Create: true,
+		Create: true,
 	})
 	if err != nil {
 		return nil, err
