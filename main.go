@@ -32,7 +32,10 @@ func run() ([]byte, error) {
 		return nil, err
 	}
 
-	repo, err := git.PlainOpen(pwd)
+	//repo, err := git.PlainOpen(pwd)
+	repo, err := git.PlainOpenWithOptions(pwd, &git.PlainOpenOptions{
+		DetectDotGit: true,
+	})
 	if err != nil {
 		return nil, err
 	}
