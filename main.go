@@ -47,7 +47,6 @@ func run() ([]byte, error) {
 	ref := plumbing.ReferenceName(branch)
 	err = repo.CreateBranch(&config.Branch{
 		Name:   branch,
-		Merge:  "exp",
 	})
 	if err != nil {
 		return nil, err
