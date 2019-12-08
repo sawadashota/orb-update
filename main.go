@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
-	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 func main() {
@@ -25,23 +24,22 @@ func main() {
 
 func run() ([]byte, error) {
 	// open
-	//pwd, err := os.Getwd()
-	//if err != nil {
-	//	return nil, err
-	//}
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 
-	//repo, err := git.PlainOpen(pwd)
+	repo, err := git.PlainOpen(pwd)
 
 	//repo, err := git.PlainOpenWithOptions(pwd, &git.PlainOpenOptions{
 	//	DetectDotGit: true,
 	//})
-	fs := memfs.New()
-
-	fmt.Println("cloning")
-	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
-		URL:           "https://sawadashota:2543a4c9fec276a276367442b88affb29614903a@github.com/sawadashota/orb-update.git",
-		ReferenceName: plumbing.ReferenceName("refs/heads/pullrequest"),
-	})
+	//fs := memfs.New()
+	//fmt.Println("cloning")
+	//repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+	//	URL:           "https://sawadashota:2543a4c9fec276a276367442b88affb29614903a@github.com/sawadashota/orb-update.git",
+	//	ReferenceName: plumbing.ReferenceName("refs/heads/pullrequest"),
+	//})
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +70,7 @@ func run() ([]byte, error) {
 	}
 
 	// create file
-	file, err := fs.Create(".test.txt")
+	file, err := os.Create(".test.txt")
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +83,17 @@ func run() ([]byte, error) {
 		return nil, err
 	}
 
-	hash, _ := w.Commit("update version", &git.CommitOptions{
+	hash, err := w.Commit("update version", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Shota Sawada",
 			Email: "xiootas@gmail.com",
 			When:  time.Now(),
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
+
 	err = repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, hash.String()))
 	if err != nil {
 		return nil, err
