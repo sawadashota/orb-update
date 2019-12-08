@@ -71,18 +71,6 @@ func run() ([]byte, error) {
 		return nil, err
 	}
 
-	br, err := repo.Branches()
-	if err != nil {
-		return nil, err
-	}
-	err = br.ForEach(func(reference *plumbing.Reference) error {
-		fmt.Println(reference.Name())
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	// create file
 	file, err := fs.Create(".test.txt")
 	if err != nil {
@@ -105,6 +93,18 @@ func run() ([]byte, error) {
 		},
 	})
 	err = repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, hash.String()))
+	if err != nil {
+		return nil, err
+	}
+
+	br, err := repo.Branches()
+	if err != nil {
+		return nil, err
+	}
+	err = br.ForEach(func(reference *plumbing.Reference) error {
+		fmt.Println(reference.Name())
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
