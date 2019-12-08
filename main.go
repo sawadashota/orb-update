@@ -37,6 +37,7 @@ func run() ([]byte, error) {
 	//})
 	fs := memfs.New()
 
+	fmt.Println("cloning")
 	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
 		URL:           "https://sawadashota:2543a4c9fec276a276367442b88affb29614903a@github.com/sawadashota/orb-update.git",
 		ReferenceName: plumbing.ReferenceName("refs/heads/pullrequest"),
@@ -70,11 +71,17 @@ func run() ([]byte, error) {
 		return nil, err
 	}
 
-	br, err := repo.Branch(branch)
+	br, err := repo.Branches()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(br.Name)
+	err = br.ForEach(func(reference *plumbing.Reference) error {
+		fmt.Println(reference.Name())
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// create file
 	file, err := fs.Create(".test.txt")
