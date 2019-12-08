@@ -111,5 +111,12 @@ func run() ([]byte, error) {
 		return nil, err
 	}
 
+	st, err := w.Status()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(st.String())
+
 	return nil, nil
 }
