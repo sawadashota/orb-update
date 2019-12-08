@@ -46,7 +46,7 @@ func run() ([]byte, error) {
 	ref := plumbing.ReferenceName(branch)
 
 	err = w.Checkout(&git.CheckoutOptions{
-		Branch: ref
+		Branch: ref,
 		Create: true,
 	})
 	if err != nil {
