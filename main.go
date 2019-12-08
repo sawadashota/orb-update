@@ -59,7 +59,7 @@ func run() ([]byte, error) {
 	f.Close()
 
 	// commit
-	_, err = w.Add(".version")
+	_, err = w.Add(".")
 	if err != nil {
 		return nil, err
 	}
