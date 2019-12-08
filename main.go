@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/src-d/go-billy.v4/memfs"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 	"os"
 	"time"
-
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-
 	"gopkg.in/src-d/go-git.v4/plumbing"
-
 	"gopkg.in/src-d/go-git.v4"
 )
 
@@ -32,8 +31,15 @@ func run() ([]byte, error) {
 	}
 
 	//repo, err := git.PlainOpen(pwd)
-	repo, err := git.PlainOpenWithOptions(pwd, &git.PlainOpenOptions{
-		DetectDotGit: true,
+
+	//repo, err := git.PlainOpenWithOptions(pwd, &git.PlainOpenOptions{
+	//	DetectDotGit: true,
+	//})
+	fs := memfs.New()
+
+	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+		URL:           "https://sawadashota:2543a4c9fec276a276367442b88affb29614903a@github.com/sawadashota/orb-update.git",
+		ReferenceName: plumbing.ReferenceName("refs/heads/pullrequest"),
 	})
 	if err != nil {
 		return nil, err
@@ -71,12 +77,12 @@ func run() ([]byte, error) {
 	fmt.Println(br.Name)
 
 	// create file
-	f, err := os.Create(".test.txt")
+	file, err := fs.Create(".test.txt")
 	if err != nil {
 		return nil, err
 	}
-	f.Write([]byte("hello\n"))
-	f.Close()
+	file.Write([]byte("hello\n"))
+	file.Close()
 
 	// commit
 	_, err = w.Add(".")
