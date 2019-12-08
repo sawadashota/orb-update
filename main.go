@@ -59,7 +59,6 @@ func run() ([]byte, error) {
 	f.Close()
 
 	// commit
-	ref := plumbing.ReferenceName(branch)
 	_, err = w.Add(".version")
 	if err != nil {
 		return nil, err
@@ -76,6 +75,7 @@ func run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	//ref := plumbing.ReferenceName(branch)
 
 	return nil, nil
 }
