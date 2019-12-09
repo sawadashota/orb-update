@@ -7,10 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"gopkg.in/src-d/go-git.v4/config"
-
 	"github.com/sawadashota/orb-update/driver"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
@@ -138,7 +137,7 @@ func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 		fmt.Println(ref.String())
 	}
 
-	ref := fmt.Sprintf("%s:%s", branch, branch)
+	ref := fmt.Sprintf("%s:refs/heads/%s", branch, branch)
 	return d.repo.PushContext(ctx, &git.PushOptions{
 		RemoteName: git.DefaultRemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(ref)},
