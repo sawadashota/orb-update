@@ -98,7 +98,7 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 		return "", err
 	}
 
-	if _, err := w.Add("."); err != nil {
+	if _, err := w.Add(".circleci"); err != nil {
 		return "", err
 	}
 
