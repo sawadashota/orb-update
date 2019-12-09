@@ -5,8 +5,6 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/src-d/go-git.v4/config"
-
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -54,15 +52,15 @@ func run() ([]byte, error) {
 	// checkout
 	branch := "test-" + time.Now().String()
 	ref := plumbing.ReferenceName(branch)
-	err = repo.CreateBranch(&config.Branch{
-		Name:   branch,
-		Remote: "origin",
-		Merge:  plumbing.ReferenceName("refs/heads/" + branch),
-		Rebase: "true",
-	})
-	if err != nil {
-		return nil, err
-	}
+	//err = repo.CreateBranch(&config.Branch{
+	//	Name:   branch,
+	//	Remote: "origin",
+	//	Merge:  plumbing.ReferenceName("refs/heads/" + branch),
+	//	Rebase: "true",
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	err = w.Checkout(&git.CheckoutOptions{
 		Branch: ref,
