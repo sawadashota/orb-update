@@ -137,7 +137,7 @@ func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 		fmt.Println(ref.String())
 	}
 
-	ref := fmt.Sprintf("refs/heads/%s:refs/remotes/origin/%s", branch, branch)
+	ref := fmt.Sprintf("+refs/heads/%s:refs/remotes/origin/%s", branch, branch)
 	return d.repo.PushContext(ctx, &git.PushOptions{
 		RemoteName: git.DefaultRemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(ref)},
