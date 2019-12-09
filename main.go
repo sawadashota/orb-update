@@ -50,7 +50,7 @@ func run() ([]byte, error) {
 	}
 
 	// checkout
-	branch := "test-" + time.Now().String()
+	branch := "refs/heads/test-" + time.Now().String()
 	ref := plumbing.ReferenceName(branch)
 	//err = repo.CreateBranch(&config.Branch{
 	//	Name:   branch,
