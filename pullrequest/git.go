@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"gopkg.in/src-d/go-git.v4/config"
+
 	"github.com/sawadashota/orb-update/driver"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
@@ -116,6 +117,8 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Printf("Hash: %s\n", h.String())
 
 	return CommitHash(h.String()), nil
 }
