@@ -57,7 +57,7 @@ func run() ([]byte, error) {
 	err = repo.CreateBranch(&config.Branch{
 		Name:   branch,
 		Remote: "origin",
-		Merge:  "refs/heads/exp",
+		Merge:  ref,
 		Rebase: "true",
 	})
 	if err != nil {
