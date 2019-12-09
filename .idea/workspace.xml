@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="24c021a6-f9d4-4a3e-acd3-fb0c8e522e07" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/pullrequest/git.go" beforeDir="false" afterPath="$PROJECT_DIR$/pullrequest/git.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pullrequest/github.go" beforeDir="false" afterPath="$PROJECT_DIR$/pullrequest/github.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
