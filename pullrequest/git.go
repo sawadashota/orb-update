@@ -80,8 +80,15 @@ func (d *DefaultGitClient) Switch(branch string, create bool) error {
 }
 
 func (d *DefaultGitClient) SwitchBack() error {
-	fmt.Printf("SwitchBack: %s", d.BaseBranch())
-	return d.Switch(d.BaseBranch(), false)
+	fmt.Printf("SwitchBack: %s\n", d.BaseBranch())
+	w, err := d.repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	return w.Checkout(&git.CheckoutOptions{
+		Branch: plumbing.ReferenceName("refs/heads/" + d.BaseBranch()),
+	})
 }
 
 func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, error) {

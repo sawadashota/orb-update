@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="24c021a6-f9d4-4a3e-acd3-fb0c8e522e07" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.envrc.sample" beforeDir="false" afterPath="$PROJECT_DIR$/.envrc.sample" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pullrequest/git.go" beforeDir="false" afterPath="$PROJECT_DIR$/pullrequest/git.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="/usr/local/Cellar/go/1.13.4/libexec" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="ProjectId" id="1Ubzyc7OcO4ROHfAGP4fHDyW29b" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="ask.go.tool.to.install.GoImportsTaskConsumer" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="watcher.settings" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/driver" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+    <proxy>direct</proxy>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="348" y="127" key="#GOROOT" timestamp="1575643510384">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="348" y="127" key="#GOROOT/56.23.1384.877@56.23.1384.877" timestamp="1575643510384" />
+    <state x="467" y="271" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1575782806923">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="467" y="271" key="#com.intellij.fileTypes.FileTypeChooser/56.23.1384.877@56.23.1384.877" timestamp="1575782806923" />
+    <state x="398" y="246" key="EditFileWatcherDialog" timestamp="1575893832915">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="398" y="246" key="EditFileWatcherDialog/56.23.1384.877@56.23.1384.877" timestamp="1575893832915" />
+    <state x="273" y="23" key="SettingsEditor" timestamp="1575893835104">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="273" y="23" key="SettingsEditor/56.23.1384.877@56.23.1384.877" timestamp="1575893835104" />
+    <state x="406" y="104" width="683" height="714" key="find.popup" timestamp="1575894102910">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="406" y="104" width="683" height="714" key="find.popup/56.23.1384.877@56.23.1384.877" timestamp="1575894102910" />
+    <state x="413" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1575715747504">
+      <screen x="56" y="23" width="1384" height="877" />
+    </state>
+    <state x="413" y="213" width="670" height="676" key="search.everywhere.popup/56.23.1384.877@56.23.1384.877" timestamp="1575715747504" />
+  </component>
+</project>
