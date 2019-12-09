@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/src-d/go-git.v4/config"
 	"os"
 	"time"
+
+	"gopkg.in/src-d/go-git.v4/config"
 
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -55,6 +56,9 @@ func run() ([]byte, error) {
 	ref := plumbing.ReferenceName(branch)
 	err = repo.CreateBranch(&config.Branch{
 		Name:   branch,
+		Remote: "origin",
+		Merge:  "refs/heads/exp",
+		Rebase: "true",
 	})
 	if err != nil {
 		return nil, err
