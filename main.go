@@ -64,7 +64,7 @@ func run() ([]byte, error) {
 
 	err = w.Checkout(&git.CheckoutOptions{
 		Branch: ref,
-		//Create: true,
+		Create: true,
 	})
 	if err != nil {
 		return nil, err
