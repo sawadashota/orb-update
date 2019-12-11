@@ -75,7 +75,7 @@ workflows:
       - orb-update
     triggers:
       - schedule:
-          cron: "10 14 * * *"  # minute hour day month week (UTC)
+          cron: "30 14 * * *"  # minute hour day month week (UTC)
           filters:
             branches:
               only:
