@@ -28,6 +28,22 @@ orbs:
   hello-build: circleci/hello-build@0.0.14
 ```
 
+### Pull Request Creation Option
+
+orb-update accept `--repo` (shorthand is `-r`) option. This option commit, push and creates Pull Request on GitHub.
+
+```
+$ orb-update -r sawadashota/orb-update
+```
+
+This option requires following environment variables.
+
+* `GIT_USERNAME`: commit's author name
+* `GIT_EMAIL`: commit's author email
+* `GITHUB_USERNAME`: GitHub token's user
+* `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension)
+* `TARGET_BRANCH`: Pull Request's target branch (default is `master`)
+
 Installation
 ---
 
