@@ -27,6 +27,12 @@ jobs:
       - run: go mod download
       - run: go mod verify
       - run: goreleaser
+  orb-update:
+    docker:
+      - image: sawadashota/orb-update:latest
+    steps:
+      - checkout
+      - run: orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
 workflows:
   version: 2
@@ -64,3 +70,13 @@ workflows:
           tag: ${CIRCLE_TAG}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+  self-orb-update:
+    jobs:
+      - orb-update
+    triggers:
+      - schedule:
+          cron: "5 14 * * *"  # minute hour day month week (UTC)
+          filters:
+            branches:
+              only:
+                - master
