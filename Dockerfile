@@ -12,7 +12,7 @@ RUN go build -a -installsuffix cgo -o orb-update
 FROM alpine:3.10
 COPY --from=builder /go/src/github.com/sawadashota/orb-update/orb-update /usr/bin/orb-update
 
-RUN apk add -U --no-cache ca-certificates
+RUN apk add -U --no-cache git openssh ca-certificates
 
 WORKDIR /repo
 
