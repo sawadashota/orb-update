@@ -72,5 +72,5 @@ func (g *GitHubPullRequest) Create(ctx context.Context, message string) error {
 
 func (g *GitHubPullRequest) branch() string {
 	o := g.difference.New
-	return fmt.Sprintf("orb-update/%s/%s-%s-aaaa", o.Namespace(), o.Name(), o.Version())
+	return fmt.Sprintf("orb-update/%s/%s-%s", o.Namespace(), o.Name(), o.Version())
 }
