@@ -85,8 +85,10 @@ func (d *DefaultGitClient) SwitchBack() error {
 		return err
 	}
 
+	fmt.Printf("SwitchBack: %s", d.BaseBranch())
 	return w.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName("refs/heads/" + d.BaseBranch()),
+		Force:  true,
 	})
 }
 
