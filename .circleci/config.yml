@@ -37,7 +37,7 @@ jobs:
          name: Update Orbs
          command: |
            docker run --rm \
-            -v $(pwd):/repo \
+            -v `pwd`:/repo \
             -e GIT_USERNAME="${GIT_USERNAME}" \
             -e GIT_EMAIL="${GIT_EMAIL}" \
             -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
