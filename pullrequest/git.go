@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/sawadashota/orb-update/driver"
@@ -63,7 +63,7 @@ func NewDefaultGitClient(d driver.Driver) (Git, error) {
 }
 
 func (d *DefaultGitClient) BaseBranch() string {
-	return filepath.Base(d.base.Name().String())
+	return strings.ReplaceAll(d.base.Name().String(), "refs/heads/", "")
 }
 
 func (d *DefaultGitClient) Switch(branch string, create bool) error {
