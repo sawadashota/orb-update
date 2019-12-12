@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@0.5.18
-  git: ganta/git@1.2.0
 
 jobs:
   test:
@@ -30,12 +29,22 @@ jobs:
       - run: goreleaser
   orb-update:
     docker:
-      - image: sawadashota/orb-update:latest
+      - image: docker:19.03.5
     steps:
-      - git/shallow-clone-checkout:
-          use-https: true
-          github-access-token: ${GITHUB_TOKEN}
-      - run: orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+      - checkout
+      - setup_remote_docker
+      - run:
+         name: Update Orbs
+         command: |
+           docker run --rm \
+            -v $(pwd):/repo \
+            -e GIT_USERNAME="${GIT_USERNAME}" \
+            -e GIT_EMAIL="${GIT_EMAIL}" \
+            -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
+            -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
+            -e TARGET_BRANCH="${TARGET_BRANCH}" \
+            sawadashota/orb-update:latest \
+            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
 workflows:
   version: 2
