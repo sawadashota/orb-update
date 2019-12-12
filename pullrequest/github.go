@@ -70,6 +70,24 @@ func (g *GitHubPullRequest) Create(ctx context.Context, message string) error {
 	return nil
 }
 
+func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context) (bool, error) {
+	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
+		State: "open",
+		Head:  g.branch(),
+		Base:  g.d.Configuration().TargetBranch(),
+	})
+	if err != nil {
+		return false, err
+	}
+
+	for _, pr := range prs {
+		if pr.Head.GetRef() == g.branch() {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (g *GitHubPullRequest) branch() string {
 	o := g.difference.New
 	return fmt.Sprintf("orb-update/%s/%s-%s", o.Namespace(), o.Name(), o.Version())

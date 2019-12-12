@@ -70,14 +70,33 @@ func RootCmd() *cobra.Command {
 				return nil
 			}
 
-			// overwrite the configuration file
-			writer, err := os.Create(path)
-			if err != nil {
-				return err
-			}
-			defer writer.Close()
-
 			for _, diff := range diffs {
+				var pr pullrequest.Creator
+				ctx := context.Background()
+
+				if repo != "" {
+					d := driver.NewDefaultDriver()
+					r, err := parseRepository(repo)
+					if err != nil {
+						return err
+					}
+
+					pr, err = pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
+					if err != nil {
+						return err
+					}
+
+					alreadyCreated, err := pr.AlreadyCreated(ctx)
+					if err != nil {
+						return err
+					}
+
+					if alreadyCreated {
+						_, _ = fmt.Fprintf(os.Stdout, "PR for %s has been already created\n", diff.New.String())
+						continue
+					}
+				}
+
 				_, _ = fmt.Fprintf(
 					os.Stdout,
 					"Updating %s/%s (%s => %s)\n",
@@ -87,25 +106,19 @@ func RootCmd() *cobra.Command {
 					diff.New.Version(),
 				)
 
+				// overwrite the configuration file
+				writer, err := os.Create(path)
+				if err != nil {
+					return err
+				}
+
 				if err := cf.Update(writer, diff.New); err != nil {
 					return err
 				}
+				writer.Close()
 
 				if repo == "" {
 					continue
-				}
-
-				d := driver.NewDefaultDriver()
-
-				r, err := parseRepository(repo)
-				if err != nil {
-					return err
-				}
-
-				ctx := context.Background()
-				pr, err := pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
-				if err != nil {
-					return err
 				}
 
 				message := fmt.Sprintf("Bump %s/%s from %s to %s\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
