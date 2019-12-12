@@ -39,6 +39,7 @@ workflows:
   test:
     jobs:
       - test
+      - orb-update
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
