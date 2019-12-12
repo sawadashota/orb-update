@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@0.5.18
+  git: ganta/git@1.2.0
 
 jobs:
   test:
@@ -31,7 +32,9 @@ jobs:
     docker:
       - image: sawadashota/orb-update:latest
     steps:
-      - checkout
+      - git/shallow-clone-checkout:
+          use-https: true
+          github-access-token: ${GITHUB_TOKEN}
       - run: orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
 workflows:
@@ -39,6 +42,7 @@ workflows:
   test:
     jobs:
       - test
+      - orb-update
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
