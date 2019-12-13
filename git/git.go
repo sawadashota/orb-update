@@ -145,17 +145,16 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 		return "", err
 	}
 
-	err = d.repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, h.String()))
-	if err != nil {
-		return "", err
-	}
+	//err = d.repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, h.String()))
+	//if err != nil {
+	//	return "", err
+	//}
 
 	return CommitHash(h.String()), nil
 }
 
 func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 	ref := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branch, branch)
-	fmt.Println(ref)
 	return d.repo.PushContext(ctx, &git.PushOptions{
 		RemoteName: git.DefaultRemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(ref)},
@@ -163,6 +162,5 @@ func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 			Username: d.d.Configuration().GithubUsername(),
 			Password: d.d.Configuration().GithubToken(),
 		},
-		Progress: os.Stdout,
 	})
 }
