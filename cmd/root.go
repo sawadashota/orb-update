@@ -155,15 +155,15 @@ func RootCmd() *cobra.Command {
 						return nil
 					}
 
-					if err := pr.Create(ctx, commitMessage(diff), branchForPR(diff)); err != nil {
-						return err
-					}
-
 					if _, err := g.Commit(commitMessage(diff), branchForPR(diff)); err != nil {
 						return err
 					}
 
 					if err := g.Push(ctx, branch); err != nil {
+						return err
+					}
+
+					if err := pr.Create(ctx, commitMessage(diff), branchForPR(diff)); err != nil {
 						return err
 					}
 

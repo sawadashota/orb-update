@@ -154,8 +154,8 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 }
 
 func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
-	fmt.Println(ref)
 	ref := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branch, branch)
+	fmt.Println(ref)
 	return d.repo.PushContext(ctx, &git.PushOptions{
 		RemoteName: git.DefaultRemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(ref)},
