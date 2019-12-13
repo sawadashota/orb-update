@@ -159,7 +159,7 @@ func RootCmd() *cobra.Command {
 						return err
 					}
 
-					if err := g.Push(ctx, branch); err != nil {
+					if err := g.Push(ctx, branchForPR(diff)); err != nil {
 						return err
 					}
 
