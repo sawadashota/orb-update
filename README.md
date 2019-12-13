@@ -43,7 +43,7 @@ This option requires following environment variables.
 * `GITHUB_USERNAME`: GitHub token's user
 * `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension)
 * `TARGET_BRANCH`: Pull Request's target branch (default is `master`)
-* `FILESYSTEM_STRATEGY`: Filesystem to operate (default is `os`)
+* `FILESYSTEM_STRATEGY`: Filesystem to operate. `os` or `memory` (default is `os`)
 
 Installation
 ---

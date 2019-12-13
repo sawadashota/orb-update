@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/sawadashota/orb-update/driver"
@@ -26,24 +25,6 @@ func RootCmd() *cobra.Command {
 		Use:     "orb-update",
 		Short:   "Update CircleCI Orb versions",
 		Example: "",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			pwd, err := os.Getwd()
-			if err != nil {
-				return err
-			}
-
-			path := filepath.Join(pwd, filePath)
-			file, err := os.Stat(path)
-			if err != nil {
-				return err
-			}
-
-			if file.IsDir() {
-				return errors.Errorf("%s is not a file", filePath)
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			d := driver.NewDefaultDriver()
 
