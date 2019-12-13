@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sawadashota/orb-update/driver"
-
-	"golang.org/x/oauth2"
-
 	"github.com/google/go-github/v28/github"
+	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/orb"
+	"golang.org/x/oauth2"
 )
 
 // GitHubRelease .
@@ -36,44 +34,22 @@ func NewGitHubPullRequest(ctx context.Context, d driver.Driver, owner string, re
 	}, nil
 }
 
-func (g *GitHubPullRequest) Create(ctx context.Context, message string) error {
-	gc, err := NewDefaultGitClient(g.d)
-	if err != nil {
-		return err
-	}
-
-	if err := gc.Switch(g.branch(), true); err != nil {
-		return err
-	}
-
-	defer gc.SwitchBack()
-
-	if _, err := gc.Commit(message, g.branch()); err != nil {
-		return err
-	}
-
-	if err := gc.Push(ctx, g.branch()); err != nil {
-		return err
-	}
-
+func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch string) error {
 	o := g.difference.New
-	_, _, err = g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
+	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
 		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), g.difference.Old.Version(), o.Version())),
 		Body:  &message,
 		Base:  github.String(g.d.Configuration().TargetBranch()),
-		Head:  github.String(g.branch()),
+		Head:  github.String(baseBranch),
 	})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
-func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context) (bool, error) {
+func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (bool, error) {
 	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
 		State: "open",
-		Head:  g.branch(),
+		Head:  branch,
 		Base:  g.d.Configuration().TargetBranch(),
 	})
 	if err != nil {
@@ -81,14 +57,9 @@ func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context) (bool, error) {
 	}
 
 	for _, pr := range prs {
-		if pr.Head.GetRef() == g.branch() {
+		if pr.Head.GetRef() == branch {
 			return true, nil
 		}
 	}
 	return false, nil
-}
-
-func (g *GitHubPullRequest) branch() string {
-	o := g.difference.New
-	return fmt.Sprintf("orb-update/%s/%s-%s", o.Namespace(), o.Name(), o.Version())
 }

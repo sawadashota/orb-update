@@ -29,10 +29,24 @@ jobs:
       - run: goreleaser
   orb-update:
     docker:
-      - image: sawadashota/orb-update:latest
+      - image: docker:19.03.5
+    working_directory: /repo
     steps:
       - checkout
-      - run: orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+      - setup_remote_docker
+      - run:
+         name: Update Orbs
+         command: |
+           docker run --rm \
+            -v /repo:/repo \
+            -e GIT_USERNAME="${GIT_USERNAME}" \
+            -e GIT_EMAIL="${GIT_EMAIL}" \
+            -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
+            -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
+            -e TARGET_BRANCH="${TARGET_BRANCH}" \
+            -e FILESYSTEM_STRATEGY=memory \
+            sawadashota/orb-update:latest \
+            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
 workflows:
   version: 2

@@ -1,25 +1,28 @@
-package pullrequest
+package git
 
 import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/sawadashota/orb-update/driver"
+	"github.com/sawadashota/orb-update/filesystem"
+	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 type Git interface {
 	BaseBranch() string
 	Switch(branch string, create bool) error
 	SwitchBack() error
-	Commit(message string, branch string) (CommitHash, error)
+	Commit(message string, path string) (CommitHash, error)
 	Push(ctx context.Context, branch string) error
 }
 
@@ -39,31 +42,61 @@ type DefaultGitClient struct {
 	base *plumbing.Reference
 }
 
-func NewDefaultGitClient(d driver.Driver) (Git, error) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
+func Clone(d driver.Driver, owner, name, branch string) (Git, filesystem.Filesystem, error) {
+	fs := memfs.New()
 
-	repo, err := git.PlainOpen(pwd)
+	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+		URL: fmt.Sprintf(
+			"https://%s:%s@github.com/%s/%s.git",
+			d.Configuration().GithubUsername(),
+			d.Configuration().GithubToken(),
+			owner,
+			name,
+		),
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
+	})
+
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	return &DefaultGitClient{
 		d:    d,
 		repo: repo,
 		base: head,
-	}, nil
+	}, filesystem.NewMemory(fs), nil
+}
+
+func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	repo, err := git.PlainOpen(pwd)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &DefaultGitClient{
+		d:    d,
+		repo: repo,
+		base: head,
+	}, filesystem.NewOs(), nil
 }
 
 func (d *DefaultGitClient) BaseBranch() string {
-	return filepath.Base(d.base.Name().String())
+	return strings.ReplaceAll(d.base.Name().String(), "refs/heads/", "")
 }
 
 func (d *DefaultGitClient) Switch(branch string, create bool) error {
@@ -87,16 +120,17 @@ func (d *DefaultGitClient) SwitchBack() error {
 
 	return w.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName("refs/heads/" + d.BaseBranch()),
+		Force:  true,
 	})
 }
 
-func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, error) {
+func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, error) {
 	w, err := d.repo.Worktree()
 	if err != nil {
 		return "", err
 	}
 
-	if _, err := w.Add(".circleci"); err != nil {
+	if _, err := w.Add(path); err != nil {
 		return "", err
 	}
 
@@ -107,11 +141,6 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 			When:  time.Now(),
 		},
 	})
-	if err != nil {
-		return "", err
-	}
-
-	err = d.repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, h.String()))
 	if err != nil {
 		return "", err
 	}
