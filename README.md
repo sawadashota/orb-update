@@ -30,10 +30,10 @@ orbs:
 
 ### Pull Request Creation Option
 
-orb-update accept `--repo` (shorthand is `-r`) option. This option commit, push and creates Pull Request on GitHub.
+orb-update accept `--repo` (shorthand is `-r`) option and `--pull-request` (shorthand is `-p`).
 
 ```
-$ orb-update -r sawadashota/orb-update
+$ orb-update -r sawadashota/orb-update --pull-request
 ```
 
 This option requires following environment variables.
@@ -43,6 +43,7 @@ This option requires following environment variables.
 * `GITHUB_USERNAME`: GitHub token's user
 * `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension)
 * `TARGET_BRANCH`: Pull Request's target branch (default is `master`)
+* `FILESYSTEM_STRATEGY`: Filesystem to operate (default is `os` but `memory` in docker)
 
 Installation
 ---
