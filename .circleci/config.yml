@@ -44,6 +44,7 @@ jobs:
             -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
             -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
             -e TARGET_BRANCH="${TARGET_BRANCH}" \
+            -e FILESYSTEM_STRATEGY=memory \
             sawadashota/orb-update:latest \
             orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
