@@ -42,7 +42,7 @@ jobs:
     working_directory: /repo
     steps:
       - setup_remote_docker
-      - run: docker pull sawadashota/orb-update:latest
+      - run: docker pull sawadashota/orb-update:v0.0.3
       - run:
          name: Update Orbs
          command: |
@@ -54,7 +54,7 @@ jobs:
             -e TARGET_BRANCH="${TARGET_BRANCH}" \
             -e FILESYSTEM_STRATEGY=memory \
             sawadashota/orb-update:latest \
-            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME --pull-request
+            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:v0.0.3 --pull-request
 
 workflows:
   version: 2
