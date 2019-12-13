@@ -22,7 +22,7 @@ type Git interface {
 	BaseBranch() string
 	Switch(branch string, create bool) error
 	SwitchBack() error
-	Commit(message string, branch string) (CommitHash, error)
+	Commit(message string, path string) (CommitHash, error)
 	Push(ctx context.Context, branch string) error
 }
 
@@ -124,13 +124,13 @@ func (d *DefaultGitClient) SwitchBack() error {
 	})
 }
 
-func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, error) {
+func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, error) {
 	w, err := d.repo.Worktree()
 	if err != nil {
 		return "", err
 	}
 
-	if _, err := w.Add(".circleci"); err != nil {
+	if _, err := w.Add(path); err != nil {
 		return "", err
 	}
 
@@ -144,11 +144,6 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 	if err != nil {
 		return "", err
 	}
-
-	//err = d.repo.Storer.SetReference(plumbing.NewReferenceFromStrings(branch, h.String()))
-	//if err != nil {
-	//	return "", err
-	//}
 
 	return CommitHash(h.String()), nil
 }

@@ -71,15 +71,7 @@ func RootCmd() *cobra.Command {
 				}
 			}
 
-			//pwd, err := os.Getwd()
-			//if err != nil {
-			//	return err
-			//}
-			//
-			//path := filepath.Join(pwd, filePath)
-
 			reader, err := fs.Reader(filePath)
-			//reader, err := os.OpenFile(path, os.O_RDONLY, 0666)
 			if err != nil {
 				return err
 			}
@@ -155,7 +147,7 @@ func RootCmd() *cobra.Command {
 						return nil
 					}
 
-					if _, err := g.Commit(commitMessage(diff), branchForPR(diff)); err != nil {
+					if _, err := g.Commit(commitMessage(diff), filePath); err != nil {
 						return err
 					}
 
