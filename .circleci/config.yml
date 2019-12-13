@@ -32,13 +32,11 @@ jobs:
       - image: docker:19.03.5
     working_directory: /repo
     steps:
-      - checkout
       - setup_remote_docker
       - run:
          name: Update Orbs
          command: |
            docker run --rm \
-            -v /repo:/repo \
             -e GIT_USERNAME="${GIT_USERNAME}" \
             -e GIT_EMAIL="${GIT_EMAIL}" \
             -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
