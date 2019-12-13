@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	viperGitAuthorName  = "git.author.name"
-	viperGitAuthorEmail = "git.author.email"
-	viperGithubToken    = "github.token"
-	viperGithubUsername = "github.username"
-	viperTargetBranch   = "target_branch"
+	viperGitAuthorName      = "git.author.name"
+	viperGitAuthorEmail     = "git.author.email"
+	viperGithubToken        = "github.token"
+	viperGithubUsername     = "github.username"
+	viperTargetBranch       = "target_branch"
+	viperFilesystemStrategy = "filesystem.strategy"
 )
 
 func init() {
@@ -47,4 +48,18 @@ func (v *ViperProvider) TargetBranch() string {
 		return "master"
 	}
 	return branch
+}
+
+const (
+	InMemoryFilesystemStrategy = "memory"
+	OsFileSystemStrategy       = "os"
+)
+
+func (v *ViperProvider) FilesystemStrategy() string {
+	strategy := viper.GetString(viperFilesystemStrategy)
+	if strategy == "" {
+		return OsFileSystemStrategy
+	}
+
+	return InMemoryFilesystemStrategy
 }

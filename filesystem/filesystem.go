@@ -8,6 +8,8 @@ import (
 )
 
 type Filesystem interface {
+	Reader(path string) (io.ReadCloser, error)
+	OverWriter(path string) (io.WriteCloser, error)
 }
 
 type Os struct{}

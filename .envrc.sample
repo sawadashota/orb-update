@@ -5,3 +5,5 @@ export GITHUB_USERNAME=
 export GITHUB_TOKEN=
 
 export TARGET_BRANCH=
+
+export FILESYSTEM_STRATEGY=

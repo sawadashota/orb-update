@@ -1,4 +1,4 @@
-package pullrequest
+package git
 
 import (
 	"context"
@@ -8,11 +8,14 @@ import (
 	"time"
 
 	"github.com/sawadashota/orb-update/driver"
+	"github.com/sawadashota/orb-update/filesystem"
+	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 type Git interface {
@@ -39,27 +42,57 @@ type DefaultGitClient struct {
 	base *plumbing.Reference
 }
 
-func NewDefaultGitClient(d driver.Driver) (Git, error) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
+func Clone(d driver.Driver, owner, name, branch string) (Git, filesystem.Filesystem, error) {
+	fs := memfs.New()
 
-	repo, err := git.PlainOpen(pwd)
+	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+		URL: fmt.Sprintf(
+			"https://%s:%s@github.com/%s/%s.git",
+			d.Configuration().GithubUsername(),
+			d.Configuration().GithubToken(),
+			owner,
+			name,
+		),
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
+	})
+
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	return &DefaultGitClient{
 		d:    d,
 		repo: repo,
 		base: head,
-	}, nil
+	}, filesystem.NewMemory(fs), nil
+}
+
+func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	repo, err := git.PlainOpen(pwd)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &DefaultGitClient{
+		d:    d,
+		repo: repo,
+		base: head,
+	}, filesystem.NewOs(), nil
 }
 
 func (d *DefaultGitClient) BaseBranch() string {

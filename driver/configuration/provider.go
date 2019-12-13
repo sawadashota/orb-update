@@ -8,4 +8,6 @@ type Provider interface {
 	GithubToken() string
 
 	TargetBranch() string
+
+	FilesystemStrategy() string
 }
