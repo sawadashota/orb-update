@@ -42,8 +42,6 @@ jobs:
     working_directory: /repo
     steps:
       - setup_remote_docker
-      - checkout
-      - run: docker build -t sawadashota/orb-update:latest .
       - run:
          name: Update Orbs
          command: |
@@ -62,7 +60,6 @@ workflows:
   test:
     jobs:
       - test
-      - orb-update
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
