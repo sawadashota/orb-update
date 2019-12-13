@@ -182,7 +182,7 @@ func RootCmd() *cobra.Command {
 	c.Flags().StringVarP(&filePath, "file", "f", ".circleci/config.yml", "target config file path")
 	c.Flags().StringVarP(&repo, "repo", "r", "", "GitHub repository name ex) owner/name")
 	c.Flags().StringVarP(&branch, "branch", "b", "master", "Branch to clone")
-	c.Flags().BoolVarP(&doesCreatePullRequest, "pull-request", "pr", false, "Create Pull Request or not")
+	c.Flags().BoolVarP(&doesCreatePullRequest, "pull-request", "p", false, "Create Pull Request or not")
 
 	return c
 }
