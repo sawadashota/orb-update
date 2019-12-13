@@ -51,7 +51,7 @@ func RootCmd() *cobra.Command {
 			var g git.Git
 			var err error
 			if d.Configuration().FilesystemStrategy() == configuration.InMemoryFilesystemStrategy {
-				if repo != "" {
+				if repo == "" {
 					return errors.New("repository name wasn't given")
 				}
 
