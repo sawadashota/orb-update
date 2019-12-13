@@ -154,6 +154,7 @@ func (d *DefaultGitClient) Commit(message string, branch string) (CommitHash, er
 }
 
 func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
+	fmt.Println(ref)
 	ref := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branch, branch)
 	return d.repo.PushContext(ctx, &git.PushOptions{
 		RemoteName: git.DefaultRemoteName,
@@ -162,5 +163,6 @@ func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 			Username: d.d.Configuration().GithubUsername(),
 			Password: d.d.Configuration().GithubToken(),
 		},
+		Progress: os.Stdout,
 	})
 }
