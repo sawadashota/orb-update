@@ -53,10 +53,12 @@ workflows:
   test:
     jobs:
       - test
+      - orb-update
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       - docker/hadolint:
+          # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
   release-master:
     jobs:
