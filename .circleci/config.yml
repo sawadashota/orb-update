@@ -44,7 +44,7 @@ jobs:
             -e TARGET_BRANCH="${TARGET_BRANCH}" \
             -e FILESYSTEM_STRATEGY=memory \
             sawadashota/orb-update:latest \
-            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME --pull-reuqest
+            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME --pull-request
 
 workflows:
   version: 2
