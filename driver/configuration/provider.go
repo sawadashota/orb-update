@@ -7,7 +7,7 @@ type Provider interface {
 	GithubUsername() string
 	GithubToken() string
 
-	TargetBranch() string
+	BaseBranch() string
 
 	FilesystemStrategy() string
 }

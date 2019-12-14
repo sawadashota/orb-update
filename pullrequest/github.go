@@ -39,7 +39,7 @@ func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch stri
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
 		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), g.difference.Old.Version(), o.Version())),
 		Body:  &message,
-		Base:  github.String(g.d.Configuration().TargetBranch()),
+		Base:  github.String(g.d.Configuration().BaseBranch()),
 		Head:  github.String(baseBranch),
 	})
 
@@ -50,7 +50,7 @@ func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (
 	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
 		State: "open",
 		Head:  branch,
-		Base:  g.d.Configuration().TargetBranch(),
+		Base:  g.d.Configuration().BaseBranch(),
 	})
 	if err != nil {
 		return false, err
