@@ -122,3 +122,4 @@ workflows:
           validate: true
           checkout: false
           attach-workspace: true
+          workspace-root: .
