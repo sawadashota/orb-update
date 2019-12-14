@@ -59,6 +59,30 @@ $ brew tap sawadashota/homebrew-cheers
 $ brew install orb-update
 ```
 
+Using CircleCI Orb
+---
+
+It's easy to check and update orb version every night. Here is an example.
+
+```yaml
+version: 2.1
+
+workflows:
+orb-update:
+  jobs:
+    - orb-update/orb-update:
+        repository: owner/repository-name
+  triggers:
+    - schedule:
+        cron: "0 19 * * *"
+        filters:
+          branches:
+            only:
+              - master
+```
+
+https://circleci.com/orbs/registry/orb/sawadashota/orb-update
+
 Using Docker Image
 ---
 
