@@ -4,6 +4,6 @@ export GIT_EMAIL=
 export GITHUB_USERNAME=
 export GITHUB_TOKEN=
 
-export TARGET_BRANCH=
+export BASE_BRANCH=
 
 export FILESYSTEM_STRATEGY=

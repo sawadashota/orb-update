@@ -18,7 +18,6 @@ import (
 func RootCmd() *cobra.Command {
 	var filePath string
 	var repo string
-	var branch string
 	var doesCreatePullRequest bool
 
 	c := &cobra.Command{
@@ -41,7 +40,7 @@ func RootCmd() *cobra.Command {
 					return err
 				}
 
-				g, fs, err = git.Clone(d, r.owner, r.name, branch)
+				g, fs, err = git.Clone(d, r.owner, r.name)
 				if err != nil {
 					return err
 				}
@@ -154,7 +153,6 @@ func RootCmd() *cobra.Command {
 
 	c.Flags().StringVarP(&filePath, "file", "f", ".circleci/config.yml", "target config file path")
 	c.Flags().StringVarP(&repo, "repo", "r", "", "GitHub repository name ex) owner/name")
-	c.Flags().StringVarP(&branch, "branch", "b", "master", "Branch to clone")
 	c.Flags().BoolVarP(&doesCreatePullRequest, "pull-request", "p", false, "Create Pull Request or not")
 
 	return c

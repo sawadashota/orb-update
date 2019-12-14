@@ -11,7 +11,7 @@ const (
 	viperGitAuthorEmail     = "git.author.email"
 	viperGithubToken        = "github.token"
 	viperGithubUsername     = "github.username"
-	viperTargetBranch       = "target_branch"
+	viperBaseBranch         = "base_branch"
 	viperFilesystemStrategy = "filesystem.strategy"
 )
 
@@ -42,8 +42,8 @@ func (v *ViperProvider) GithubToken() string {
 	return viper.GetString(viperGithubToken)
 }
 
-func (v *ViperProvider) TargetBranch() string {
-	branch := viper.GetString(viperTargetBranch)
+func (v *ViperProvider) BaseBranch() string {
+	branch := viper.GetString(viperBaseBranch)
 	if branch == "" {
 		return "master"
 	}

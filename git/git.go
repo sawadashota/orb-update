@@ -42,7 +42,7 @@ type DefaultGitClient struct {
 	base *plumbing.Reference
 }
 
-func Clone(d driver.Driver, owner, name, branch string) (Git, filesystem.Filesystem, error) {
+func Clone(d driver.Driver, owner, name string) (Git, filesystem.Filesystem, error) {
 	fs := memfs.New()
 
 	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
@@ -53,7 +53,7 @@ func Clone(d driver.Driver, owner, name, branch string) (Git, filesystem.Filesys
 			owner,
 			name,
 		),
-		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", d.Configuration().BaseBranch())),
 	})
 
 	if err != nil {
