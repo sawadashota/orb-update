@@ -59,7 +59,7 @@ jobs:
 
 workflows:
   version: 2
-  test:
+  test-go:
     jobs:
       - test
       - docker/publish:
@@ -112,6 +112,7 @@ workflows:
           workspace-path: circleci-orb/packed/orb.yml
           artifact-path: circleci-orb/packed/orb.yml
           validate: true
+          workspace-root: .
       - orb-tools/publish-dev:
           context: circleci
           requires:
