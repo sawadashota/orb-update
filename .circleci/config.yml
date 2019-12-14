@@ -1,6 +1,7 @@
 version: 2.1
 
 orbs:
+  orb-update: sawadashota/orb-update@0.1.4
   docker: circleci/docker@0.5.18
   circleci-cli: circleci/circleci-cli@0.1.6
   orb-tools: circleci/orb-tools@8.27.6
@@ -42,10 +43,15 @@ jobs:
 
   pack-orb:
     environment:
-      LATEST_TAG: latest
+      DOCKER_LATEST_TAG: latest
+      ORB_LATEST_TAG: volatile
     parameters:
-      orb_update_default_docker_image_tag:
-        description: Default docker image tag of orb-update
+      docker_image_latest_tag:
+        description: Latest docker image tag of orb-update
+        type: env_var_name
+        default: CIRCLE_TAG
+      orb_latest_version:
+        description: Latest orb version of orb-update
         type: env_var_name
         default: CIRCLE_TAG
     executor: circleci-cli/default
@@ -62,7 +68,8 @@ jobs:
       - run:
           name: Embed environment variables to orb.yml
           command: |
-            ENVSUBST_ORB_UPDATE_DOCKER_TAG=${<< parameters.orb_update_default_docker_image_tag >>} \
+            ENVSUBST_ORB_UPDATE_DOCKER_TAG=${<< parameters.docker_image_latest_tag >>} \
+              ENVSUBST_ORB_VERSION=${<< parameters.orb_latest_version >>} \
               envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
       - orb-tools/pack:
           destination: circleci-orb/packed/orb.yml
@@ -76,26 +83,6 @@ jobs:
       - store_artifacts:
           path: circleci-orb/packed/orb.yml
 
-  orb-update:
-    docker:
-      - image: docker:19.03.5
-    working_directory: /repo
-    steps:
-      - setup_remote_docker
-      - run: docker pull sawadashota/orb-update:v0.1.1
-      - run:
-         name: Update Orbs
-         command: |
-           docker run --rm \
-            -e GIT_USERNAME="${GIT_USERNAME}" \
-            -e GIT_EMAIL="${GIT_EMAIL}" \
-            -e GITHUB_USERNAME="${GITHUB_USERNAME}" \
-            -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
-            -e TARGET_BRANCH="${TARGET_BRANCH}" \
-            -e FILESYSTEM_STRATEGY=memory \
-            sawadashota/orb-update:latest \
-            orb-update -r $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:v0.0.3 --pull-request
-
 workflows:
   version: 2
   test:
@@ -108,7 +95,8 @@ workflows:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
-          orb_update_default_docker_image_tag: LATEST_TAG
+          docker_image_latest_tag: DOCKER_LATEST_TAG
+          orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
           context: circleci
           requires:
@@ -150,7 +138,8 @@ workflows:
           docker-password: DOCKER_PASSWORD
       - pack-orb:
           filters: *release_filter
-          orb_update_default_docker_image_tag: CIRCLE_TAG
+          docker_image_latest_tag: CIRCLE_TAG
+          orb_latest_version: CIRCLE_TAG
       - orb-tools/publish:
           filters: *release_filter
           context: circleci
@@ -165,9 +154,10 @@ workflows:
           attach-workspace: true
           workspace-root: .
 
-  self-orb-update:
+  orb-update:
     jobs:
-      - orb-update
+      - orb-update/orb-update:
+          repository: sawadashota/orb-update
     triggers:
       - schedule:
           cron: "0 10 * * *"  # minute hour day month week (UTC)
