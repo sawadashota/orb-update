@@ -82,7 +82,7 @@ jobs:
             - circleci-orb/packed/orb.yml
       - store_artifacts:
           path: circleci-orb/packed/orb.yml
-          destination: /
+          destination: circleci-orb/packed/orb.yml
 
 workflows:
   version: 2
