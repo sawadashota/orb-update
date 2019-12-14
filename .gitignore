@@ -1,2 +1,4 @@
 .envrc
 .docker-env
+circleci-orb/packed/
+circleci-orb/src/@orb.yml

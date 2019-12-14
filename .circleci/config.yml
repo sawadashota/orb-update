@@ -2,9 +2,11 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@0.5.18
+  circleci-cli: circleci/circleci-cli@0.1.6
+  orb-tools: circleci/orb-tools@8.27.6
 
 jobs:
-  test:
+  test-go:
     docker:
       - image: circleci/golang:1.13
     steps:
@@ -28,6 +30,7 @@ jobs:
       - store_artifacts:
           path: coverage.html
           destination: coverage.html
+
   release-binary:
     docker:
       - image: goreleaser/goreleaser:v0.123
@@ -36,6 +39,41 @@ jobs:
       - run: go mod download
       - run: go mod verify
       - run: goreleaser
+
+  pack-orb:
+    parameters:
+      orb_update_default_docker_image_tag:
+        description: Default docker image tag of orb-update
+        type: string
+        default: ${CIRCLE_TAG}
+    executor: circleci-cli/default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install envsubst
+          command: |
+            curl -L https://github.com/a8m/envsubst/releases/download/v1.1.0/envsubst-`uname -s`-`uname -m` -o envsubst
+            chmod +x envsubst
+            sudo mv envsubst /usr/local/bin
+      - run:
+          name: Embed environment variables to orb.yml
+          command: envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
+          environment:
+            ENVSUBST_ORB_UPDATE_DOCKER_TAG: << parameters.orb_update_default_docker_image_tag >>
+      - orb-tools/pack:
+          destination: circleci-orb/packed/orb.yml
+          source: circleci-orb/src/
+      - orb-tools/validate:
+          orb-path: circleci-orb/packed/orb.yml
+      - persist_to_workspace:
+          root: .
+          paths:
+            - circleci-orb/packed/orb.yml
+      - store_artifacts:
+          path: circleci-orb/packed/orb.yml
+
   orb-update:
     docker:
       - image: docker:19.03.5
@@ -60,13 +98,27 @@ workflows:
   version: 2
   test:
     jobs:
-      - test
+      - test-go
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       - docker/hadolint:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
+      - pack-orb:
+          orb_update_default_docker_image_tag: latest
+      - orb-tools/publish-dev:
+          context: circleci
+          requires:
+            - pack-orb
+          orb-name: sawadashota/orb-update
+          orb-path: circleci-orb/packed/orb.yml
+          publish-token-variable: CIRCLE_TOKEN
+          validate: true
+          checkout: false
+          attach-workspace: true
+          workspace-root: .
+
   release-master:
     jobs:
       - docker/publish:
@@ -78,6 +130,7 @@ workflows:
           tag: latest
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+
   release-version:
     jobs:
       - release-binary:
@@ -93,6 +146,22 @@ workflows:
           tag: ${CIRCLE_TAG}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+      - pack-orb:
+          filters: *release_filter
+      - orb-tools/publish:
+          filters: *release_filter
+          context: circleci
+          requires:
+            - docker/publish
+            - pack-orb
+          orb-ref: sawadashota/orb-update@${CIRCLE_TAG}
+          orb-path: circleci-orb/packed/orb.yml
+          publish-token-variable: CIRCLE_TOKEN
+          validate: true
+          checkout: false
+          attach-workspace: true
+          workspace-root: .
+
   self-orb-update:
     jobs:
       - orb-update
