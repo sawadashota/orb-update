@@ -77,10 +77,7 @@ jobs:
 
 workflows:
   version: 2
-  #
-  # Workflow for Go and Docker
-  #
-  test-go:
+  test:
     jobs:
       - test-go
       - docker/publish:
@@ -89,8 +86,6 @@ workflows:
       - docker/hadolint:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
-  test-orb:
-    jobs:
       - pack-orb
       - orb-tools/publish-dev:
           context: circleci
@@ -103,6 +98,7 @@ workflows:
           checkout: false
           attach-workspace: true
           workspace-root: .
+
   release-master:
     jobs:
       - docker/publish:
@@ -114,6 +110,7 @@ workflows:
           tag: latest
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+
   release-version:
     jobs:
       - release-binary:
