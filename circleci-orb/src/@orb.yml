@@ -12,6 +12,9 @@ orbs:
           - image: docker:19.03.5
     commands:
       orb-update:
+        description: >
+          Execute orb-update command via docker command.
+          Update each Orb version and create Pull Request on GitHub.
         parameters: &parameters
           base_branch:
             description: Base branch name of Pull Request
@@ -61,6 +64,9 @@ orbs:
                  orb-update -r "<< parameters.repository >>" --pull-request
     jobs:
       orb-update:
+        description: >
+          Execute orb-update command.
+          Update each Orb version and create Pull Request on GitHub.
         executor: docker
         parameters: *parameters
         steps:

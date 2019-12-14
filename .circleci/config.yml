@@ -59,6 +59,9 @@ jobs:
 
 workflows:
   version: 2
+  #
+  # Workflow for Go and Docker
+  #
   test-go:
     jobs:
       - test-go
@@ -68,6 +71,26 @@ workflows:
       - docker/hadolint:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
+  test-orb:
+    jobs:
+      - orb-tools/pack:
+          source-dir: circleci-orb/src/
+          destination-orb-path: circleci-orb/packed/orb.yml
+          workspace-path: circleci-orb/packed/orb.yml
+          artifact-path: circleci-orb/packed/orb.yml
+          validate: true
+          workspace-root: .
+      - orb-tools/publish-dev:
+          context: circleci
+          requires:
+            - orb-tools/pack
+          orb-name: sawadashota/orb-update
+          orb-path: circleci-orb/packed/orb.yml
+          publish-token-variable: CIRCLE_TOKEN
+          validate: true
+          checkout: false
+          attach-workspace: true
+          workspace-root: .
   release-master:
     jobs:
       - docker/publish:
@@ -94,6 +117,28 @@ workflows:
           tag: ${CIRCLE_TAG}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+      - orb-tools/pack:
+          filters: *release_filter
+          source-dir: circleci-orb/src/
+          destination-orb-path: circleci-orb/packed/orb.yml
+          workspace-path: circleci-orb/packed/orb.yml
+          artifact-path: circleci-orb/packed/orb.yml
+          validate: true
+          workspace-root: .
+      - orb-tools/publish:
+          filters: *release_filter
+          context: circleci
+          requires:
+            - docker/publish
+            - orb-tools/pack
+          orb-ref: sawadashota/orb-update@${CIRCLE_TAG}
+          orb-path: circleci-orb/packed/orb.yml
+          publish-token-variable: CIRCLE_TOKEN
+          validate: true
+          checkout: false
+          attach-workspace: true
+          workspace-root: .
+
   self-orb-update:
     jobs:
       - orb-update
@@ -104,23 +149,3 @@ workflows:
             branches:
               only:
                 - master
-  test-orb:
-    jobs:
-      - orb-tools/pack:
-          source-dir: circleci-orb/src/
-          destination-orb-path: circleci-orb/packed/orb.yml
-          workspace-path: circleci-orb/packed/orb.yml
-          artifact-path: circleci-orb/packed/orb.yml
-          validate: true
-          workspace-root: .
-      - orb-tools/publish-dev:
-          context: circleci
-          requires:
-            - orb-tools/pack
-          orb-name: sawadashota/orb-update
-          orb-path: circleci-orb/packed/orb.yml
-          publish-token-variable: CIRCLE_TOKEN
-          validate: true
-          checkout: false
-          attach-workspace: true
-          workspace-root: .
