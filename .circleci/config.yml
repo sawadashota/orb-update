@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@0.5.18
+  orb-tools: circleci/orb-tools@8.27.6
 
 jobs:
   test:
@@ -103,3 +104,21 @@ workflows:
             branches:
               only:
                 - master
+  test-orb:
+    jobs:
+      - orb-tools/pack:
+          source-dir: circleci-orb/src/
+          destination-orb-path: circleci-orb/packed/orb.yml
+          workspace-path: circleci-orb/packed/orb.yml
+          artifact-path: circleci-orb/packed/orb.yml
+          validate: true
+      - orb-tools/publish-dev:
+          context: circleci
+          requires:
+            - orb-tools/pack
+          orb-name: sawadashota/orb-update
+          orb-path: circleci-orb/packed/orb.yml
+          publish-token-variable: CIRCLE_TOKEN
+          validate: true
+          checkout: false
+          attach-workspace: true

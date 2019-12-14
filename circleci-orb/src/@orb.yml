@@ -1,0 +1,75 @@
+version: 2.1
+
+description: |
+  Update CircleCI Orbs versions
+  https://github.com/sawadashota/orb-update
+
+orbs:
+  orb-update:
+    executors:
+      docker:
+        docker:
+          - image: docker:19.03.5
+    commands:
+      orb-update:
+        parameters: &parameters
+          base_branch:
+            description: Base branch name of Pull Request
+            type: string
+            default: master
+          repository:
+            description: Repository name to update Orb
+            type: string
+            default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          github_username:
+            description: Username of GitHub Token's owner
+            type: env_var_name
+            default: GITHUB_USERNAME
+          github_token:
+            description: |
+              GitHub Token to read/create Pull Request
+              https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension
+            type: env_var_name
+            default: GITHUB_TOKEN
+          git_username:
+            description: Name for commit signature
+            type: env_var_name
+            default: GIT_USERNAME
+          git_email:
+            description: Email for commit signature
+            type: env_var_name
+            default: GIT_EMAIL
+          docker_image_version:
+            description: |
+              Version of docker image sawadashota/orb-update
+              https://hub.docker.com/r/sawadashota/orb-update
+            type: string
+            default: 0.1.0
+        steps:
+          - run: docker pull sawadashota/orb-update:<< parameters.docker_image_version >>
+          - run:
+              name: Update Orbs
+              command: |
+                docker run --rm \
+                 -e BASE_BRANCH="<< parameters.base_branch >>" \
+                 -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
+                 -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
+                 -e GIT_USERNAME="$<< parameters.git_username >>" \
+                 -e GIT_EMAIL="${<< parameters.git_email >>}" \
+                 -e FILESYSTEM_STRATEGY=memory \
+                 sawadashota/orb-update:<< parameters.docker_image_version >> \
+                 orb-update -r "<< parameters.repository >>" --pull-request
+    jobs:
+      orb-update:
+        executor: docker
+        parameters: *parameters
+        steps:
+          - setup_remote_docker
+          - orb-update:
+              base_branch: << parameters.base_branch >>
+              repository: << parameters.repository >>
+              github_username: << parameters.github_username >>
+              github_token: << parameters.github_token >>
+              git_username: << parameters.git_username >>
+              git_email: << parameters.git_email >>
+              docker_image_version: << parameters.docker_image_version >>
