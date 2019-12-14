@@ -61,7 +61,9 @@ jobs:
             sudo mv envsubst /usr/local/bin
       - run:
           name: Embed environment variables to orb.yml
-          command: ENVSUBST_ORB_UPDATE_DOCKER_TAG=${<< parameters.orb_update_default_docker_image_tag >>} envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
+          command: |
+            ENVSUBST_ORB_UPDATE_DOCKER_TAG=${<< parameters.orb_update_default_docker_image_tag >>} \
+              envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
       - orb-tools/pack:
           destination: circleci-orb/packed/orb.yml
           source: circleci-orb/src/
