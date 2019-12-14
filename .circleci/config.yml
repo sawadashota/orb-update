@@ -5,7 +5,7 @@ orbs:
   orb-tools: circleci/orb-tools@8.27.6
 
 jobs:
-  test:
+  test-go:
     docker:
       - image: circleci/golang:1.13
     steps:
@@ -61,7 +61,7 @@ workflows:
   version: 2
   test-go:
     jobs:
-      - test
+      - test-go
       - docker/publish:
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
