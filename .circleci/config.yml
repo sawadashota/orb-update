@@ -45,7 +45,6 @@ jobs:
       orb_update_default_docker_image_tag:
         description: Default docker image tag of orb-update
         type: string
-        default: ${CIRCLE_TAG}
     executor: circleci-cli/default
     steps:
       - checkout
@@ -148,6 +147,7 @@ workflows:
           docker-password: DOCKER_PASSWORD
       - pack-orb:
           filters: *release_filter
+          orb_update_default_docker_image_tag: ${CIRCLE_TAG}
       - orb-tools/publish:
           filters: *release_filter
           context: circleci
