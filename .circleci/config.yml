@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@0.5.18
+  circleci-cli: circleci/circleci-cli@0.1.6
   orb-tools: circleci/orb-tools@8.27.6
 
 jobs:
@@ -37,6 +38,23 @@ jobs:
       - run: go mod download
       - run: go mod verify
       - run: goreleaser
+  pack-orb:
+    executor: circleci-cli/default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - orb-tools/pack:
+          destination: circleci-orb/packed/orb.yml
+          source: circleci-orb/src/
+      - orb-tools/validate:
+          orb-path: circleci-orb/packed/orb.yml
+      - persist_to_workspace:
+          root: .
+          paths:
+            - circleci-orb/packed/orb.yml
+      - store_artifacts:
+          path: circleci-orb/packed/orb.yml
   orb-update:
     docker:
       - image: docker:19.03.5
@@ -73,17 +91,11 @@ workflows:
           ignore-rules: DL3018
   test-orb:
     jobs:
-      - orb-tools/pack:
-          source-dir: circleci-orb/src/
-          destination-orb-path: circleci-orb/packed/orb.yml
-          workspace-path: circleci-orb/packed/orb.yml
-          artifact-path: circleci-orb/packed/orb.yml
-          validate: true
-          workspace-root: .
+      - pack-orb
       - orb-tools/publish-dev:
           context: circleci
           requires:
-            - orb-tools/pack
+            - pack-orb
           orb-name: sawadashota/orb-update
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN
@@ -117,20 +129,14 @@ workflows:
           tag: ${CIRCLE_TAG}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
-      - orb-tools/pack:
+      - pack-orb:
           filters: *release_filter
-          source-dir: circleci-orb/src/
-          destination-orb-path: circleci-orb/packed/orb.yml
-          workspace-path: circleci-orb/packed/orb.yml
-          artifact-path: circleci-orb/packed/orb.yml
-          validate: true
-          workspace-root: .
       - orb-tools/publish:
           filters: *release_filter
           context: circleci
           requires:
             - docker/publish
-            - orb-tools/pack
+            - pack-orb
           orb-ref: sawadashota/orb-update@${CIRCLE_TAG}
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN
