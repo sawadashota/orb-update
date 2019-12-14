@@ -53,7 +53,7 @@ jobs:
           at: .
       - run:
           name: Install envsubst
-          command: apt-get -y install gettext-base
+          command: sudo apt-get -y install gettext-base
       - run:
           name: Embed environment variables to orb.yml
           command: envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
@@ -102,7 +102,8 @@ workflows:
       - docker/hadolint:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
-      - pack-orb
+      - pack-orb:
+          orb_update_default_docker_image_tag: latest
       - orb-tools/publish-dev:
           context: circleci
           requires:
