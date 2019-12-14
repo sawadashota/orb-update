@@ -41,6 +41,8 @@ jobs:
       - run: goreleaser
 
   pack-orb:
+    environment:
+      LATEST_TAG: latest
     parameters:
       orb_update_default_docker_image_tag:
         description: Default docker image tag of orb-update
@@ -104,9 +106,7 @@ workflows:
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
-          environment:
-            TAG: latest
-          orb_update_default_docker_image_tag: TAG
+          orb_update_default_docker_image_tag: LATEST_TAG
       - orb-tools/publish-dev:
           context: circleci
           requires:
