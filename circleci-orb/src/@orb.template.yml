@@ -47,7 +47,7 @@ orbs:
               Version of docker image sawadashota/orb-update
               https://hub.docker.com/r/sawadashota/orb-update
             type: string
-            default: 0.1.0
+            default: ${ENVSUBST_ORB_UPDATE_DOCKER_TAG}
         steps:
           - run: docker pull sawadashota/orb-update:<< parameters.docker_image_version >>
           - run:

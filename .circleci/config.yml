@@ -30,6 +30,7 @@ jobs:
       - store_artifacts:
           path: coverage.html
           destination: coverage.html
+
   release-binary:
     docker:
       - image: goreleaser/goreleaser:v0.123
@@ -38,12 +39,26 @@ jobs:
       - run: go mod download
       - run: go mod verify
       - run: goreleaser
+
   pack-orb:
+    parameters:
+      orb_update_default_docker_image_tag:
+        description: Default docker image tag of orb-update
+        type: string
+        default: latest
     executor: circleci-cli/default
     steps:
       - checkout
       - attach_workspace:
           at: .
+      - run:
+          name: Install envsubst
+          environment:
+            ENVSUBST_ORB_UPDATE_DOCKER_TAG: << parameters.orb_update_default_docker_image_tag >>
+          command: apt-get -y install gettext-base
+      - run:
+          name: Embed environment variables to orb.yml
+          command: envsubst < /tmp/test.conf.template > /tmp/test.conf && cat /tmp/test.conf
       - orb-tools/pack:
           destination: circleci-orb/packed/orb.yml
           source: circleci-orb/src/
@@ -55,6 +70,7 @@ jobs:
             - circleci-orb/packed/orb.yml
       - store_artifacts:
           path: circleci-orb/packed/orb.yml
+
   orb-update:
     docker:
       - image: docker:19.03.5
