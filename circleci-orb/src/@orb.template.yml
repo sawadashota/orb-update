@@ -26,9 +26,8 @@ commands:
         type: string
         default: master
       repository:
-        description: Repository name to update Orb
+        description: Repository name to update Orb ex) sawadashota/orb-update
         type: string
-        default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       github_username:
         description: Username of GitHub Token's owner
         type: env_var_name
@@ -84,3 +83,24 @@ jobs:
           git_username: << parameters.git_username >>
           git_email: << parameters.git_email >>
           docker_image_version: << parameters.docker_image_version >>
+
+examples:
+  update-every-night:
+    description: |
+      Check and update orb every night.
+    usage:
+      orbs:
+        orb-update: sawadashota/orb-update@${ENVSUBST_ORB_VERSION} # will be replaced by envsubst
+      version: 2.1
+      workflows:
+        orb-update:
+          jobs:
+            - orb-update/orb-update:
+                repository: sawadashota/orb-update
+          triggers:
+            - schedule:
+                cron: "0 19 * * *"
+                filters:
+                  branches:
+                    only:
+                      - master
