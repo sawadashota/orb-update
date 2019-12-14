@@ -1,3 +1,10 @@
+#
+# Orb template file
+#
+# Before packing, replace ENVSUBST_ prefix texts by envsubst command
+# https://github.com/a8m/envsubst
+#
+
 version: 2.1
 
 description: |
@@ -47,7 +54,7 @@ orbs:
               Version of docker image sawadashota/orb-update
               https://hub.docker.com/r/sawadashota/orb-update
             type: string
-            default: ${ENVSUBST_ORB_UPDATE_DOCKER_TAG}
+            default: ${ENVSUBST_ORB_UPDATE_DOCKER_TAG} # will be replaced by envsubst
         steps:
           - run: docker pull sawadashota/orb-update:<< parameters.docker_image_version >>
           - run:
