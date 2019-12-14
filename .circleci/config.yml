@@ -45,7 +45,7 @@ jobs:
       orb_update_default_docker_image_tag:
         description: Default docker image tag of orb-update
         type: string
-        default: latest
+        default: ${CIRCLE_TAG}
     executor: circleci-cli/default
     steps:
       - checkout
@@ -53,12 +53,12 @@ jobs:
           at: .
       - run:
           name: Install envsubst
-          environment:
-            ENVSUBST_ORB_UPDATE_DOCKER_TAG: << parameters.orb_update_default_docker_image_tag >>
           command: apt-get -y install gettext-base
       - run:
           name: Embed environment variables to orb.yml
-          command: envsubst < /tmp/test.conf.template > /tmp/test.conf && cat /tmp/test.conf
+          command: envsubst < circleci-orb/src/@orb.template.yml > circleci-orb/src/@orb.yml
+          environment:
+            ENVSUBST_ORB_UPDATE_DOCKER_TAG: << parameters.orb_update_default_docker_image_tag >>
       - orb-tools/pack:
           destination: circleci-orb/packed/orb.yml
           source: circleci-orb/src/
