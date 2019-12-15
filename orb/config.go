@@ -70,7 +70,7 @@ func (cf *ConfigFile) Update(w io.Writer, newVersion *Orb) error {
 	for scan.Scan() {
 		func() {
 			if strings.Contains(scan.Text(), fmt.Sprintf("%s/%s@", newVersion.Namespace(), newVersion.Name())) {
-				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+newVersion.Version()))
+				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+newVersion.Version().String()))
 				b.WriteString("\n")
 				return
 			}
