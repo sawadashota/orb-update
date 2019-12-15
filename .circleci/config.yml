@@ -3,8 +3,13 @@ version: 2.1
 orbs:
   orb-update: sawadashota/orb-update@0.1.4
   docker: circleci/docker@0.5.18
-  circleci-cli: circleci/circleci-cli@0.1.6
   orb-tools: circleci/orb-tools@8.27.6
+  envsubst: sawadashota/envsubst@1.1.0
+
+executors:
+  circleci-cli:
+    docker:
+      - image: circleci/circleci-cli:latest
 
 jobs:
   test-go:
@@ -54,17 +59,12 @@ jobs:
         description: Latest orb version of orb-update
         type: env_var_name
         default: CIRCLE_TAG
-    executor: circleci-cli/default
+    executor: circleci-cli
     steps:
       - checkout
       - attach_workspace:
           at: .
-      - run:
-          name: Install envsubst
-          command: |
-            curl -L https://github.com/a8m/envsubst/releases/download/v1.1.0/envsubst-`uname -s`-`uname -m` -o envsubst
-            chmod +x envsubst
-            sudo mv envsubst /usr/local/bin
+      - envsubst/install
       - run:
           name: Embed environment variables to orb.yml
           command: |
