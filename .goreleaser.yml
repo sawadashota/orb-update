@@ -19,7 +19,7 @@ archives:
       - LICENSE
       - README.md
 
-brew:
+brews:
   # Name of the recipe
   # Default to project name
   name: orb-update
