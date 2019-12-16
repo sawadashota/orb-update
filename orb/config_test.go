@@ -85,7 +85,7 @@ func TestConfigFile_Parse(t *testing.T) {
 
 func TestConfigFile_Update(t *testing.T) {
 	type args struct {
-		newVersion *orb.Orb
+		diff *orb.Difference
 	}
 	cases := map[string]struct {
 		configPath string
@@ -96,7 +96,10 @@ func TestConfigFile_Update(t *testing.T) {
 		"correct format": {
 			configPath: "./testdata/correct-format.yml",
 			args: args{
-				newVersion: orb.NewOrb("example", "example01", "3.4.2"),
+				diff: orb.NewDifference(
+					orb.NewOrb("example", "example01", "3.4.1"),
+					orb.NewOrb("example", "example01", "3.4.2"),
+				),
 			},
 			want: `orbs:
   example01: example/example01@3.4.2
@@ -114,7 +117,10 @@ job:
 		"no orb": {
 			configPath: "./testdata/no-orb.yml",
 			args: args{
-				newVersion: orb.NewOrb("example", "example01", "3.4.2"),
+				diff: orb.NewDifference(
+					orb.NewOrb("example", "example01", "3.4.1"),
+					orb.NewOrb("example", "example01", "3.4.2"),
+				),
 			},
 			want: `job:
   example:
@@ -128,7 +134,10 @@ job:
 		"incorrect format": {
 			configPath: "./testdata/incorrect-format.yml",
 			args: args{
-				newVersion: orb.NewOrb("example", "example01", "3.4.2"),
+				diff: orb.NewDifference(
+					orb.NewOrb("example", "example01", "3.4.1"),
+					orb.NewOrb("example", "example01", "3.4.2"),
+				),
 			},
 			want: `orbs:
   example01: example@3.4.1
@@ -158,7 +167,7 @@ job:
 			}
 
 			var result bytes.Buffer
-			err = cf.Update(&result, c.args.newVersion)
+			err = cf.Update(&result, c.args.diff)
 			if (err != nil) != c.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, c.wantErr)
 				return
