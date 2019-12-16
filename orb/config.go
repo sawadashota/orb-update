@@ -3,7 +3,6 @@ package orb
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -63,14 +62,14 @@ func (cf *ConfigFile) Parse() (*Config, error) {
 	return &config, nil
 }
 
-func (cf *ConfigFile) Update(w io.Writer, newVersion *Orb) error {
+func (cf *ConfigFile) Update(w io.Writer, diff *Difference) error {
 	var b bytes.Buffer
 
 	scan := bufio.NewScanner(cf.reader())
 	for scan.Scan() {
 		func() {
-			if strings.Contains(scan.Text(), fmt.Sprintf("%s/%s@", newVersion.Namespace(), newVersion.Name())) {
-				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+newVersion.Version()))
+			if strings.Contains(scan.Text(), diff.Old.String()) {
+				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+diff.New.Version().String()))
 				b.WriteString("\n")
 				return
 			}

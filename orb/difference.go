@@ -12,3 +12,7 @@ func NewDifference(old, new *Orb) *Difference {
 		New: new,
 	}
 }
+
+func (d *Difference) HasUpdate() bool {
+	return d.Old.Version() != d.New.Version()
+}

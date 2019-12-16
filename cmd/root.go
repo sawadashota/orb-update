@@ -62,7 +62,7 @@ func RootCmd() *cobra.Command {
 			}
 			reader.Close()
 
-			diffs, err := parse(cf, filePath)
+			diffs, err := differences(cf)
 			if err != nil {
 				return err
 			}
@@ -118,7 +118,7 @@ func RootCmd() *cobra.Command {
 						return err
 					}
 
-					if err := cf.Update(writer, diff.New); err != nil {
+					if err := cf.Update(writer, diff); err != nil {
 						return err
 					}
 					writer.Close()

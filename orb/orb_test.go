@@ -36,3 +36,31 @@ func TestParseOrb(t *testing.T) {
 		})
 	}
 }
+
+func TestVersion_IsSemantic(t *testing.T) {
+	cases := map[string]struct {
+		version string
+		want    bool
+	}{
+		"major version": {
+			version: "1.0.0",
+			want:    true,
+		},
+		"beta version": {
+			version: "1.0.0-beta",
+			want:    true,
+		},
+		"non semantic version": {
+			version: "hoge",
+			want:    false,
+		},
+	}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			version := orb.Version(c.version)
+			if got := version.IsSemantic(); got != c.want {
+				t.Errorf("IsSemantic() = %v, want %v", got, c.want)
+			}
+		})
+	}
+}

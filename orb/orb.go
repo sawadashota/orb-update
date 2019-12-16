@@ -2,22 +2,41 @@ package orb
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 )
 
+var semanticVersionRegex *regexp.Regexp
+
+func init() {
+	semanticVersionRegex = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+`)
+}
 type Orb struct {
 	namespace string
 	name      string
-	version   string
+	version   Version
+}
+
+// Version type
+type Version string
+
+// String .
+func (v Version) String() string {
+	return string(v)
+}
+
+// IsSemantic version or not
+func (v Version) IsSemantic() bool {
+	return semanticVersionRegex.MatchString(v.String())
 }
 
 func NewOrb(namespace, name, version string) *Orb {
 	return &Orb{
 		namespace: namespace,
 		name:      name,
-		version:   version,
+		version:   Version(version),
 	}
 }
 
@@ -44,7 +63,7 @@ func (o *Orb) Name() string {
 	return o.name
 }
 
-func (o *Orb) Version() string {
+func (o *Orb) Version() Version {
 	return o.version
 }
 
