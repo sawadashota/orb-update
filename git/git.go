@@ -27,7 +27,7 @@ type Git interface {
 	Push(ctx context.Context, branch string) error
 }
 
-// CommitHash
+// CommitHash .
 type CommitHash string
 
 // String .

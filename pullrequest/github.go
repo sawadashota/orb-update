@@ -10,7 +10,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// GitHubRelease .
+// GitHubPullRequest .
 type GitHubPullRequest struct {
 	d          driver.Driver
 	client     *github.Client

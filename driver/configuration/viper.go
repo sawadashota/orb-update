@@ -38,7 +38,7 @@ func (v *ViperProvider) GitAuthorEmail() string {
 	return viper.GetString(viperGitAuthorEmail)
 }
 
-// GithubUsername.
+// GithubUsername .
 func (v *ViperProvider) GithubUsername() string {
 	return viper.GetString(viperGithubUsername)
 }
@@ -58,8 +58,10 @@ func (v *ViperProvider) BaseBranch() string {
 }
 
 const (
+	// InMemoryFilesystemStrategy .
 	InMemoryFilesystemStrategy = "memory"
-	OsFileSystemStrategy       = "os"
+	// OsFileSystemStrategy .
+	OsFileSystemStrategy = "os"
 )
 
 // FilesystemStrategy .
