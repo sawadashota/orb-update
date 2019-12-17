@@ -17,11 +17,6 @@ func init() {
 	orbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
-// Config is extracted data from CircleCI config file
-type Config struct {
-	Orbs []*Orb
-}
-
 // ConfigFile of CircleCI
 type ConfigFile struct {
 	bytes []byte
@@ -44,7 +39,7 @@ func (cf *ConfigFile) reader() io.Reader {
 }
 
 // Parse configuration file
-func (cf *ConfigFile) Parse() (*Config, error) {
+func (cf *ConfigFile) Parse() ([]*Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
@@ -52,17 +47,17 @@ func (cf *ConfigFile) Parse() (*Config, error) {
 		return nil, err
 	}
 
-	var config Config
+	var orbs []*Orb
 	for _, orb := range mapConfig.Orbs {
 		o, err := ParseOrb(orb)
 		if err != nil {
 			return nil, err
 		}
 
-		config.Orbs = append(config.Orbs, o)
+		orbs = append(orbs, o)
 	}
 
-	return &config, nil
+	return orbs, nil
 }
 
 // Update writes updated orb version
