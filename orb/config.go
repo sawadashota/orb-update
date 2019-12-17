@@ -17,14 +17,17 @@ func init() {
 	orbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
+// Config is extracted data from CircleCI config file
 type Config struct {
 	Orbs []*Orb
 }
 
+// ConfigFile of CircleCI
 type ConfigFile struct {
 	bytes []byte
 }
 
+// NewConfigFile .
 func NewConfigFile(r io.Reader) (*ConfigFile, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -62,6 +65,7 @@ func (cf *ConfigFile) Parse() (*Config, error) {
 	return &config, nil
 }
 
+// Update writes updated orb version
 func (cf *ConfigFile) Update(w io.Writer, diff *Difference) error {
 	var b bytes.Buffer
 

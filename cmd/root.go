@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// RootCmd .
 func RootCmd() *cobra.Command {
 	var filePath string
 	var repo string
@@ -100,7 +101,11 @@ func RootCmd() *cobra.Command {
 						if err := g.Switch(branchForPR(diff), true); err != nil {
 							return err
 						}
-						defer g.SwitchBack()
+						defer func() {
+							if err := g.SwitchBack(); err != nil {
+								_, _ = fmt.Fprintln(os.Stdout, err)
+							}
+						}()
 					}
 
 					_, _ = fmt.Fprintf(

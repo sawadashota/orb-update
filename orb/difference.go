@@ -1,5 +1,6 @@
 package orb
 
+// Difference of version between new and old
 type Difference struct {
 	Old *Orb
 	New *Orb
@@ -13,6 +14,7 @@ func NewDifference(old, new *Orb) *Difference {
 	}
 }
 
+// HasUpdate or not
 func (d *Difference) HasUpdate() bool {
 	return d.Old.Version() != d.New.Version()
 }

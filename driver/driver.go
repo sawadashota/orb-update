@@ -2,10 +2,12 @@ package driver
 
 import "github.com/sawadashota/orb-update/driver/configuration"
 
+// Driver .
 type Driver interface {
 	Configuration() configuration.Provider
 }
 
+// DefaultDriver .
 type DefaultDriver struct {
 	c configuration.Provider
 }

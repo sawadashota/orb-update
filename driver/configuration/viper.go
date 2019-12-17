@@ -20,28 +20,35 @@ func init() {
 	viper.AutomaticEnv()
 }
 
+// ViperProvider .
 type ViperProvider struct{}
 
+// NewViperProvider .
 func NewViperProvider() *ViperProvider {
 	return new(ViperProvider)
 }
 
+// GitAuthorName .
 func (v *ViperProvider) GitAuthorName() string {
 	return viper.GetString(viperGitAuthorName)
 }
 
+// GitAuthorEmail .
 func (v *ViperProvider) GitAuthorEmail() string {
 	return viper.GetString(viperGitAuthorEmail)
 }
 
+// GithubUsername.
 func (v *ViperProvider) GithubUsername() string {
 	return viper.GetString(viperGithubUsername)
 }
 
+// GithubToken .
 func (v *ViperProvider) GithubToken() string {
 	return viper.GetString(viperGithubToken)
 }
 
+// BaseBranch .
 func (v *ViperProvider) BaseBranch() string {
 	branch := viper.GetString(viperBaseBranch)
 	if branch == "" {
@@ -55,6 +62,7 @@ const (
 	OsFileSystemStrategy       = "os"
 )
 
+// FilesystemStrategy .
 func (v *ViperProvider) FilesystemStrategy() string {
 	strategy := viper.GetString(viperFilesystemStrategy)
 	if strategy == "" {
