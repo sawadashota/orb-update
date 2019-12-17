@@ -34,6 +34,7 @@ func NewGitHubPullRequest(ctx context.Context, d driver.Driver, owner string, re
 	}, nil
 }
 
+// Create Pull Request on GitHub
 func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch string) error {
 	o := g.difference.New
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
@@ -46,6 +47,7 @@ func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch stri
 	return err
 }
 
+// AlreadyCreated Pull Request or not
 func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (bool, error) {
 	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
 		State: "open",

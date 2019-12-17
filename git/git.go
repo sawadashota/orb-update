@@ -18,6 +18,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
+// Git .
 type Git interface {
 	BaseBranch() string
 	Switch(branch string, create bool) error
@@ -26,22 +27,22 @@ type Git interface {
 	Push(ctx context.Context, branch string) error
 }
 
+// CommitHash
 type CommitHash string
 
+// String .
 func (ch *CommitHash) String() string {
 	return string(*ch)
 }
 
-func (ch *CommitHash) hash() plumbing.Hash {
-	return plumbing.NewHash(ch.String())
-}
-
+// DefaultGitClient .
 type DefaultGitClient struct {
 	d    driver.Driver
 	repo *git.Repository
 	base *plumbing.Reference
 }
 
+// Clone repository to memory
 func Clone(d driver.Driver, owner, name string) (Git, filesystem.Filesystem, error) {
 	fs := memfs.New()
 
@@ -72,6 +73,7 @@ func Clone(d driver.Driver, owner, name string) (Git, filesystem.Filesystem, err
 	}, filesystem.NewMemory(fs), nil
 }
 
+// OpenCurrentDirectoryRepository opens current directory's repository
 func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
@@ -95,10 +97,12 @@ func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem
 	}, filesystem.NewOs(), nil
 }
 
+// BaseBranch of git
 func (d *DefaultGitClient) BaseBranch() string {
 	return strings.ReplaceAll(d.base.Name().String(), "refs/heads/", "")
 }
 
+// Switch to branch
 func (d *DefaultGitClient) Switch(branch string, create bool) error {
 	w, err := d.repo.Worktree()
 	if err != nil {
@@ -112,6 +116,7 @@ func (d *DefaultGitClient) Switch(branch string, create bool) error {
 	})
 }
 
+// SwitchBack tp origin branch
 func (d *DefaultGitClient) SwitchBack() error {
 	w, err := d.repo.Worktree()
 	if err != nil {
@@ -124,6 +129,7 @@ func (d *DefaultGitClient) SwitchBack() error {
 	})
 }
 
+// Commit .
 func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, error) {
 	w, err := d.repo.Worktree()
 	if err != nil {
@@ -148,6 +154,7 @@ func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, erro
 	return CommitHash(h.String()), nil
 }
 
+// Push to origin
 func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 	ref := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branch, branch)
 	return d.repo.PushContext(ctx, &git.PushOptions{

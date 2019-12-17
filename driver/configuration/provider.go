@@ -1,5 +1,6 @@
 package configuration
 
+// Provider of configuration
 type Provider interface {
 	GitAuthorName() string
 	GitAuthorEmail() string
