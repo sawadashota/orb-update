@@ -29,8 +29,8 @@ func TestConfigFile_Parse(t *testing.T) {
 		"correct format": {
 			configPath: "./testdata/correct-format.yml",
 			want: []*orb.Orb{
-				orb.NewOrb("example", "example01", "3.4.1"),
-				orb.NewOrb("example", "example02", "1.0.0"),
+				orb.New("example", "example01", "3.4.1"),
+				orb.New("example", "example02", "1.0.0"),
 			},
 			wantErr: false,
 		},
@@ -95,8 +95,8 @@ func TestConfigFile_Update(t *testing.T) {
 			configPath: "./testdata/correct-format.yml",
 			args: args{
 				diff: orb.NewDifference(
-					orb.NewOrb("example", "example01", "3.4.1"),
-					orb.NewOrb("example", "example01", "3.4.2"),
+					orb.New("example", "example01", "3.4.1"),
+					orb.New("example", "example01", "3.4.2"),
 				),
 			},
 			want: `orbs:
@@ -116,8 +116,8 @@ job:
 			configPath: "./testdata/no-orb.yml",
 			args: args{
 				diff: orb.NewDifference(
-					orb.NewOrb("example", "example01", "3.4.1"),
-					orb.NewOrb("example", "example01", "3.4.2"),
+					orb.New("example", "example01", "3.4.1"),
+					orb.New("example", "example01", "3.4.2"),
 				),
 			},
 			want: `job:
@@ -133,8 +133,8 @@ job:
 			configPath: "./testdata/incorrect-format.yml",
 			args: args{
 				diff: orb.NewDifference(
-					orb.NewOrb("example", "example01", "3.4.1"),
-					orb.NewOrb("example", "example01", "3.4.2"),
+					orb.New("example", "example01", "3.4.1"),
+					orb.New("example", "example01", "3.4.2"),
 				),
 			},
 			want: `orbs:

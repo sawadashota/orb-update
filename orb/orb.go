@@ -34,8 +34,8 @@ func (v Version) IsSemantic() bool {
 	return semanticVersionRegex.MatchString(v.String())
 }
 
-// NewOrb .
-func NewOrb(namespace, name, version string) *Orb {
+// New orb instance.
+func New(namespace, name, version string) *Orb {
 	return &Orb{
 		namespace: namespace,
 		name:      name,
@@ -55,7 +55,7 @@ func ParseOrb(orb string) (*Orb, error) {
 		return nil, errors.Errorf("Incorrect orb format: %s", orb)
 	}
 
-	return NewOrb(splitName[0], splitName[1], splitVersion[1]), nil
+	return New(splitName[0], splitName[1], splitVersion[1]), nil
 }
 
 // Namespace .

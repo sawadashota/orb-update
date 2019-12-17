@@ -34,5 +34,5 @@ func (c *DefaultClient) LatestVersion(orb *Orb) (*Orb, error) {
 		return nil, err
 	}
 
-	return NewOrb(orb.namespace, orb.name, version), nil
+	return New(orb.namespace, orb.name, version), nil
 }
