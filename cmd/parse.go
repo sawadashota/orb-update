@@ -5,14 +5,14 @@ import (
 )
 
 func differences(cf *orb.ConfigFile) ([]*orb.Difference, error) {
-	conf, err := cf.Parse()
+	orbs, err := cf.Parse()
 	if err != nil {
 		return nil, err
 	}
 
 	cl := orb.NewDefaultClient()
-	differences := make([]*orb.Difference, 0, len(conf.Orbs))
-	for _, o := range conf.Orbs {
+	differences := make([]*orb.Difference, 0, len(orbs))
+	for _, o := range orbs {
 		if !o.Version().IsSemantic() {
 			continue
 		}

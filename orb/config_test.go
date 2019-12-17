@@ -23,22 +23,20 @@ func containOrb(t *testing.T, needle *orb.Orb, haystack []*orb.Orb) bool {
 func TestConfigFile_Parse(t *testing.T) {
 	cases := map[string]struct {
 		configPath string
-		want       *orb.Config
+		want       []*orb.Orb
 		wantErr    bool
 	}{
 		"correct format": {
 			configPath: "./testdata/correct-format.yml",
-			want: &orb.Config{
-				Orbs: []*orb.Orb{
-					orb.NewOrb("example", "example01", "3.4.1"),
-					orb.NewOrb("example", "example02", "1.0.0"),
-				},
+			want: []*orb.Orb{
+				orb.NewOrb("example", "example01", "3.4.1"),
+				orb.NewOrb("example", "example02", "1.0.0"),
 			},
 			wantErr: false,
 		},
 		"no orb": {
 			configPath: "./testdata/no-orb.yml",
-			want:       new(orb.Config),
+			want:       []*orb.Orb{},
 			wantErr:    false,
 		},
 		"incorrect format": {
@@ -70,12 +68,12 @@ func TestConfigFile_Parse(t *testing.T) {
 				return
 			}
 
-			if len(got.Orbs) != len(c.want.Orbs) {
+			if len(got) != len(c.want) {
 				t.Errorf("Parse() got = %v, want %v", got, c.want)
 			}
 
-			for _, gotOrb := range got.Orbs {
-				if !containOrb(t, gotOrb, c.want.Orbs) {
+			for _, gotOrb := range got {
+				if !containOrb(t, gotOrb, c.want) {
 					t.Errorf("Parse() got = %v, want %v", got, c.want)
 				}
 			}
