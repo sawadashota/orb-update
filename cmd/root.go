@@ -28,28 +28,9 @@ func RootCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			d := driver.NewDefaultDriver()
 
-			var fs filesystem.Filesystem
-			var g git.Git
-			var err error
-			if d.Configuration().FilesystemStrategy() == configuration.InMemoryFilesystemStrategy {
-				if repo == "" {
-					return errors.New("repository name wasn't given")
-				}
-
-				r, err := parseRepository(repo)
-				if err != nil {
-					return err
-				}
-
-				g, fs, err = git.Clone(d, r.owner, r.name)
-				if err != nil {
-					return err
-				}
-			} else {
-				g, fs, err = git.OpenCurrentDirectoryRepository(d)
-				if err != nil {
-					return err
-				}
+			g, fs, err := newGitRepository(d, repo)
+			if err != nil {
+				return err
 			}
 
 			reader, err := fs.Reader(filePath)
@@ -161,6 +142,33 @@ func RootCmd() *cobra.Command {
 	c.Flags().BoolVarP(&doesCreatePullRequest, "pull-request", "p", false, "Create Pull Request or not")
 
 	return c
+}
+
+func newGitRepository(d driver.Driver, repo string) (git.Git, filesystem.Filesystem, error) {
+	if d.Configuration().FilesystemStrategy() == configuration.OsFileSystemStrategy {
+		g, fs, err := git.OpenCurrentDirectoryRepository(d)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return g, fs, nil
+	}
+
+	if repo == "" {
+		return nil, nil, errors.New("repository name wasn't given")
+	}
+
+	r, err := parseRepository(repo)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	g, fs, err := git.Clone(d, r.owner, r.name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return g, fs, nil
 }
 
 func branchForPR(diff *orb.Difference) string {
