@@ -54,81 +54,7 @@ func RootCmd() *cobra.Command {
 			}
 
 			for _, diff := range diffs {
-				err = func() error {
-					var pr pullrequest.Creator
-					ctx := context.Background()
-
-					if doesCreatePullRequest {
-						r, err := parseRepository(repo)
-						if err != nil {
-							return err
-						}
-
-						pr, err = pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
-						if err != nil {
-							return err
-						}
-
-						alreadyCreated, err := pr.AlreadyCreated(ctx, branchForPR(diff))
-						if err != nil {
-							return err
-						}
-
-						if alreadyCreated {
-							_, _ = fmt.Fprintf(os.Stdout, "PR for %s has been already created\n", diff.New.String())
-							return nil
-						}
-
-						if err := g.Switch(branchForPR(diff), true); err != nil {
-							return err
-						}
-						defer func() {
-							if err := g.SwitchBack(); err != nil {
-								_, _ = fmt.Fprintln(os.Stdout, err)
-							}
-						}()
-					}
-
-					_, _ = fmt.Fprintf(
-						os.Stdout,
-						"Updating %s/%s (%s => %s)\n",
-						diff.New.Namespace(),
-						diff.New.Name(),
-						diff.Old.Version(),
-						diff.New.Version(),
-					)
-
-					// overwrite the configuration file
-					writer, err := fs.OverWriter(filePath)
-					if err != nil {
-						return err
-					}
-
-					if err := cf.Update(writer, diff); err != nil {
-						return err
-					}
-					writer.Close()
-
-					if !doesCreatePullRequest {
-						return nil
-					}
-
-					if _, err := g.Commit(commitMessage(diff), filePath); err != nil {
-						return err
-					}
-
-					if err := g.Push(ctx, branchForPR(diff)); err != nil {
-						return err
-					}
-
-					if err := pr.Create(ctx, commitMessage(diff), branchForPR(diff)); err != nil {
-						return err
-					}
-
-					return nil
-				}()
-
-				if err != nil {
+				if err := update(d, g, fs, cf, diff, repo, filePath, doesCreatePullRequest); err != nil {
 					return err
 				}
 			}
@@ -144,6 +70,79 @@ func RootCmd() *cobra.Command {
 	return c
 }
 
+func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *orb.ConfigFile, diff *orb.Difference, repo, filePath string, doesCreatePullRequest bool) error {
+	var pr pullrequest.Creator
+	ctx := context.Background()
+
+	if doesCreatePullRequest {
+		r, err := parseRepository(repo)
+		if err != nil {
+			return err
+		}
+
+		pr, err = pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
+		if err != nil {
+			return err
+		}
+
+		alreadyCreated, err := pr.AlreadyCreated(ctx, branchForPR(diff))
+		if err != nil {
+			return err
+		}
+
+		if alreadyCreated {
+			_, _ = fmt.Fprintf(os.Stdout, "PR for %s has been already created\n", diff.New.String())
+			return nil
+		}
+
+		if err := g.Switch(branchForPR(diff), true); err != nil {
+			return err
+		}
+		defer func() {
+			if err := g.SwitchBack(); err != nil {
+				_, _ = fmt.Fprintln(os.Stdout, err)
+			}
+		}()
+	}
+
+	_, _ = fmt.Fprintf(
+		os.Stdout,
+		"Updating %s/%s (%s => %s)\n",
+		diff.New.Namespace(),
+		diff.New.Name(),
+		diff.Old.Version(),
+		diff.New.Version(),
+	)
+
+	// overwrite the configuration file
+	writer, err := fs.OverWriter(filePath)
+	if err != nil {
+		return err
+	}
+
+	if err := cf.Update(writer, diff); err != nil {
+		return err
+	}
+	writer.Close()
+
+	if !doesCreatePullRequest {
+		return nil
+	}
+
+	if _, err := g.Commit(commitMessage(diff), filePath); err != nil {
+		return err
+	}
+
+	if err := g.Push(ctx, branchForPR(diff)); err != nil {
+		return err
+	}
+
+	if err := pr.Create(ctx, commitMessage(diff), branchForPR(diff)); err != nil {
+		return err
+	}
+
+	return nil
+}
 func newGitRepository(d driver.Driver, repo string) (git.Git, filesystem.Filesystem, error) {
 	if d.Configuration().FilesystemStrategy() == configuration.OsFileSystemStrategy {
 		g, fs, err := git.OpenCurrentDirectoryRepository(d)
