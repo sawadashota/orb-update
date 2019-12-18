@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"github.com/sawadashota/orb-update/configfile"
 	"github.com/sawadashota/orb-update/orb"
 )
 
-func differences(cf *orb.ConfigFile) ([]*orb.Difference, error) {
+func differences(cf *configfile.ConfigFile) ([]*orb.Difference, error) {
 	orbs, err := cf.Parse()
 	if err != nil {
 		return nil, err

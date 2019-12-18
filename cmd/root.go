@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sawadashota/orb-update/configfile"
+
 	"github.com/pkg/errors"
 	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/driver/configuration"
@@ -38,7 +40,7 @@ func RootCmd() *cobra.Command {
 				return err
 			}
 
-			cf, err := orb.NewConfigFile(reader)
+			cf, err := configfile.New(reader)
 			if err != nil {
 				return err
 			}
@@ -70,7 +72,7 @@ func RootCmd() *cobra.Command {
 	return c
 }
 
-func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *orb.ConfigFile, diff *orb.Difference, repo, filePath string, doesCreatePullRequest bool) error {
+func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile.ConfigFile, diff *orb.Difference, repo, filePath string, doesCreatePullRequest bool) error {
 	var pr pullrequest.Creator
 	ctx := context.Background()
 
