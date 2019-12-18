@@ -5,14 +5,13 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v28/github"
-	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/orb"
 	"golang.org/x/oauth2"
 )
 
 // GitHubPullRequest .
 type GitHubPullRequest struct {
-	d          driver.Driver
+	c          Configuration
 	client     *github.Client
 	owner      string
 	repo       string
@@ -20,13 +19,13 @@ type GitHubPullRequest struct {
 }
 
 // NewGitHubPullRequest .
-func NewGitHubPullRequest(ctx context.Context, d driver.Driver, owner string, repo string, diff *orb.Difference) (Creator, error) {
+func NewGitHubPullRequest(ctx context.Context, c Configuration, owner string, repo string, diff *orb.Difference) (Creator, error) {
 	tc := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: d.Configuration().GithubToken()},
+		&oauth2.Token{AccessToken: c.GithubToken()},
 	))
 
 	return &GitHubPullRequest{
-		d:          d,
+		c:          c,
 		client:     github.NewClient(tc),
 		owner:      owner,
 		repo:       repo,
@@ -40,7 +39,7 @@ func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch stri
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
 		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), g.difference.Old.Version(), o.Version())),
 		Body:  &message,
-		Base:  github.String(g.d.Configuration().BaseBranch()),
+		Base:  github.String(g.c.BaseBranch()),
 		Head:  github.String(baseBranch),
 	})
 
@@ -52,7 +51,7 @@ func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (
 	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
 		State: "open",
 		Head:  branch,
-		Base:  g.d.Configuration().BaseBranch(),
+		Base:  g.c.BaseBranch(),
 	})
 	if err != nil {
 		return false, err

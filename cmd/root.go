@@ -82,7 +82,7 @@ func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile
 			return err
 		}
 
-		pr, err = pullrequest.NewGitHubPullRequest(ctx, d, r.owner, r.name, diff)
+		pr, err = pullrequest.NewGitHubPullRequest(ctx, d.Configuration(), r.owner, r.name, diff)
 		if err != nil {
 			return err
 		}
