@@ -38,8 +38,8 @@ $ orb-update -r sawadashota/orb-update --pull-request
 
 This option requires following environment variables.
 
-* `GIT_USERNAME`: commit's author name
-* `GIT_EMAIL`: commit's author email
+* `GIT_AUTHOR_NAME`: commit's author name
+* `GIT_AUTHOR_EMAIL`: commit's author email
 * `GITHUB_USERNAME`: GitHub token's user
 * `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension)
 * `BASE_BRANCH`: Base branch of Pull Request (default is `master`)

@@ -175,7 +175,7 @@ func branchForPR(diff *orb.Difference) string {
 }
 
 func commitMessage(diff *orb.Difference) string {
-	message := fmt.Sprintf("Bump %s/%s from %s to %s\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
+	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
 	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Old.Namespace(), diff.Old.Name())
 	return message
 }

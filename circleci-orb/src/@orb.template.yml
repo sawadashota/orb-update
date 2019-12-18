@@ -38,14 +38,14 @@ commands:
           https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension
         type: env_var_name
         default: GITHUB_TOKEN
-      git_username:
+      git_author_user:
         description: Name for commit signature
         type: env_var_name
-        default: GIT_USERNAME
-      git_email:
+        default: GIT_AUTHOR_NAME
+      git_author_email:
         description: Email for commit signature
         type: env_var_name
-        default: GIT_EMAIL
+        default: GIT_AUTHOR_EMAIL
       docker_image_version:
         description: |
           Version of docker image sawadashota/orb-update
@@ -61,8 +61,8 @@ commands:
              -e BASE_BRANCH="<< parameters.base_branch >>" \
              -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
              -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
-             -e GIT_USERNAME="$<< parameters.git_username >>" \
-             -e GIT_EMAIL="${<< parameters.git_email >>}" \
+             -e GIT_AUTHOR_NAME="$<< parameters.git_author_user >>" \
+             -e GIT_AUTHOR_EMAIL="${<< parameters.git_author_email >>}" \
              -e FILESYSTEM_STRATEGY=memory \
              sawadashota/orb-update:<< parameters.docker_image_version >> \
              orb-update -r "<< parameters.repository >>" --pull-request
@@ -80,8 +80,8 @@ jobs:
           repository: << parameters.repository >>
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
-          git_username: << parameters.git_username >>
-          git_email: << parameters.git_email >>
+          git_author_user: << parameters.git_author_user >>
+          git_author_email: << parameters.git_author_email >>
           docker_image_version: << parameters.docker_image_version >>
 
 examples:
