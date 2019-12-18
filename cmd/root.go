@@ -147,7 +147,7 @@ func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile
 }
 func newGitRepository(d driver.Driver, repo string) (git.Git, filesystem.Filesystem, error) {
 	if d.Configuration().FilesystemStrategy() == configuration.OsFileSystemStrategy {
-		g, fs, err := git.OpenCurrentDirectoryRepository(d)
+		g, fs, err := git.OpenCurrentDirectoryRepository(d.Configuration())
 		if err != nil {
 			return nil, nil, err
 		}
@@ -164,7 +164,7 @@ func newGitRepository(d driver.Driver, repo string) (git.Git, filesystem.Filesys
 		return nil, nil, err
 	}
 
-	g, fs, err := git.Clone(d, r.owner, r.name)
+	g, fs, err := git.Clone(d.Configuration(), r.owner, r.name)
 	if err != nil {
 		return nil, nil, err
 	}

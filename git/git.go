@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/filesystem"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
@@ -37,24 +36,24 @@ func (ch *CommitHash) String() string {
 
 // DefaultGitClient .
 type DefaultGitClient struct {
-	d    driver.Driver
+	c    Configuration
 	repo *git.Repository
 	base *plumbing.Reference
 }
 
 // Clone repository to memory
-func Clone(d driver.Driver, owner, name string) (Git, filesystem.Filesystem, error) {
+func Clone(c Configuration, owner, name string) (Git, filesystem.Filesystem, error) {
 	fs := memfs.New()
 
 	repo, err := git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
 		URL: fmt.Sprintf(
 			"https://%s:%s@github.com/%s/%s.git",
-			d.Configuration().GithubUsername(),
-			d.Configuration().GithubToken(),
+			c.GithubUsername(),
+			c.GithubToken(),
 			owner,
 			name,
 		),
-		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", d.Configuration().BaseBranch())),
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", c.BaseBranch())),
 	})
 
 	if err != nil {
@@ -67,14 +66,14 @@ func Clone(d driver.Driver, owner, name string) (Git, filesystem.Filesystem, err
 	}
 
 	return &DefaultGitClient{
-		d:    d,
+		c:    c,
 		repo: repo,
 		base: head,
 	}, filesystem.NewMemory(fs), nil
 }
 
 // OpenCurrentDirectoryRepository opens current directory's repository
-func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem, error) {
+func OpenCurrentDirectoryRepository(c Configuration) (Git, filesystem.Filesystem, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		return nil, nil, err
@@ -91,7 +90,7 @@ func OpenCurrentDirectoryRepository(d driver.Driver) (Git, filesystem.Filesystem
 	}
 
 	return &DefaultGitClient{
-		d:    d,
+		c:    c,
 		repo: repo,
 		base: head,
 	}, filesystem.NewOs(), nil
@@ -142,8 +141,8 @@ func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, erro
 
 	h, err := w.Commit(message, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  d.d.Configuration().GitAuthorName(),
-			Email: d.d.Configuration().GitAuthorEmail(),
+			Name:  d.c.GitAuthorName(),
+			Email: d.c.GitAuthorEmail(),
 			When:  time.Now(),
 		},
 	})
@@ -161,8 +160,8 @@ func (d *DefaultGitClient) Push(ctx context.Context, branch string) error {
 		RemoteName: git.DefaultRemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(ref)},
 		Auth: &http.BasicAuth{
-			Username: d.d.Configuration().GithubUsername(),
-			Password: d.d.Configuration().GithubToken(),
+			Username: d.c.GithubUsername(),
+			Password: d.c.GithubToken(),
 		},
 	})
 }
