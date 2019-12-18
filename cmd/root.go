@@ -6,15 +6,11 @@ import (
 	"os"
 
 	"github.com/sawadashota/orb-update/configfile"
-
-	"github.com/pkg/errors"
 	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/driver/configuration"
-	"github.com/sawadashota/orb-update/filesystem"
-	"github.com/sawadashota/orb-update/git"
 	"github.com/sawadashota/orb-update/orb"
-	"github.com/sawadashota/orb-update/pullrequest"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // RootCmd .
@@ -27,15 +23,22 @@ func RootCmd() *cobra.Command {
 		Use:     "orb-update",
 		Short:   "Update CircleCI Orb versions",
 		Example: "",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			d := driver.NewDefaultDriver()
+		PreRunE: func(_ *cobra.Command, _ []string) error {
+			if repo != "" {
+				viper.Set(configuration.ViperRepositoryName, repo)
+			}
 
-			g, fs, err := newGitRepository(d, repo)
+			viper.Set(configuration.ViperFilePath, filePath)
+
+			return nil
+		},
+		RunE: func(_ *cobra.Command, _ []string) error {
+			d, err := driver.NewDefaultDriver()
 			if err != nil {
 				return err
 			}
 
-			reader, err := fs.Reader(filePath)
+			reader, err := d.Registry().Filesystem().Reader(filePath)
 			if err != nil {
 				return err
 			}
@@ -56,7 +59,7 @@ func RootCmd() *cobra.Command {
 			}
 
 			for _, diff := range diffs {
-				if err := update(d, g, fs, cf, diff, repo, filePath, doesCreatePullRequest); err != nil {
+				if err := update(d, cf, diff, doesCreatePullRequest); err != nil {
 					return err
 				}
 			}
@@ -72,22 +75,11 @@ func RootCmd() *cobra.Command {
 	return c
 }
 
-func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile.ConfigFile, diff *orb.Difference, repo, filePath string, doesCreatePullRequest bool) error {
-	var pr pullrequest.Creator
+func update(d driver.Driver, cf *configfile.ConfigFile, diff *orb.Difference, doesCreatePullRequest bool) error {
 	ctx := context.Background()
 
 	if doesCreatePullRequest {
-		r, err := parseRepository(repo)
-		if err != nil {
-			return err
-		}
-
-		pr, err = pullrequest.NewGitHubPullRequest(ctx, d.Configuration(), r.owner, r.name, diff)
-		if err != nil {
-			return err
-		}
-
-		alreadyCreated, err := pr.AlreadyCreated(ctx, branchForPR(diff))
+		alreadyCreated, err := d.Registry().PullRequest().AlreadyCreated(ctx, branchForPR(diff))
 		if err != nil {
 			return err
 		}
@@ -97,11 +89,11 @@ func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile
 			return nil
 		}
 
-		if err := g.Switch(branchForPR(diff), true); err != nil {
+		if err := d.Registry().Git().Switch(branchForPR(diff), true); err != nil {
 			return err
 		}
 		defer func() {
-			if err := g.SwitchBack(); err != nil {
+			if err := d.Registry().Git().SwitchBack(); err != nil {
 				_, _ = fmt.Fprintln(os.Stdout, err)
 			}
 		}()
@@ -117,7 +109,7 @@ func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile
 	)
 
 	// overwrite the configuration file
-	writer, err := fs.OverWriter(filePath)
+	writer, err := d.Registry().Filesystem().OverWriter(d.Configuration().FilePath())
 	if err != nil {
 		return err
 	}
@@ -131,45 +123,19 @@ func update(d driver.Driver, g git.Git, fs filesystem.Filesystem, cf *configfile
 		return nil
 	}
 
-	if _, err := g.Commit(commitMessage(diff), filePath); err != nil {
+	if _, err := d.Registry().Git().Commit(commitMessage(diff), d.Configuration().FilePath()); err != nil {
 		return err
 	}
 
-	if err := g.Push(ctx, branchForPR(diff)); err != nil {
+	if err := d.Registry().Git().Push(ctx, branchForPR(diff)); err != nil {
 		return err
 	}
 
-	if err := pr.Create(ctx, commitMessage(diff), branchForPR(diff)); err != nil {
+	if err := d.Registry().PullRequest().Create(ctx, diff, commitMessage(diff), branchForPR(diff)); err != nil {
 		return err
 	}
 
 	return nil
-}
-func newGitRepository(d driver.Driver, repo string) (git.Git, filesystem.Filesystem, error) {
-	if d.Configuration().FilesystemStrategy() == configuration.OsFileSystemStrategy {
-		g, fs, err := git.OpenCurrentDirectoryRepository(d.Configuration())
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return g, fs, nil
-	}
-
-	if repo == "" {
-		return nil, nil, errors.New("repository name wasn't given")
-	}
-
-	r, err := parseRepository(repo)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	g, fs, err := git.Clone(d.Configuration(), r.owner, r.name)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return g, fs, nil
 }
 
 func branchForPR(diff *orb.Difference) string {

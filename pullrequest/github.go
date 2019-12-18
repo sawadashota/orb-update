@@ -11,33 +11,37 @@ import (
 
 // GitHubPullRequest .
 type GitHubPullRequest struct {
-	c          Configuration
-	client     *github.Client
-	owner      string
-	repo       string
-	difference orb.Difference
+	c      Configuration
+	client *github.Client
+	owner  string
+	repo   string
+}
+
+// GitRepository .
+type GitRepository interface {
+	Owner() string
+	Name() string
 }
 
 // NewGitHubPullRequest .
-func NewGitHubPullRequest(ctx context.Context, c Configuration, owner string, repo string, diff *orb.Difference) (Creator, error) {
+func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) (Creator, error) {
 	tc := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: c.GithubToken()},
 	))
 
 	return &GitHubPullRequest{
-		c:          c,
-		client:     github.NewClient(tc),
-		owner:      owner,
-		repo:       repo,
-		difference: *diff,
+		c:      c,
+		client: github.NewClient(tc),
+		owner:  r.VCSRepository().Owner(),
+		repo:   r.VCSRepository().Name(),
 	}, nil
 }
 
 // Create Pull Request on GitHub
-func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch string) error {
-	o := g.difference.New
+func (g *GitHubPullRequest) Create(ctx context.Context, diff *orb.Difference, message, baseBranch string) error {
+	o := diff.New
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
-		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), g.difference.Old.Version(), o.Version())),
+		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), diff.Old.Version(), o.Version())),
 		Body:  &message,
 		Base:  github.String(g.c.BaseBranch()),
 		Head:  github.String(baseBranch),
