@@ -23,7 +23,7 @@ func TestParseOrb(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := orb.ParseOrb(c.orb)
+			_, err := orb.Parse(c.orb)
 			if c.wantErr && err == nil {
 				t.Errorf("parse should be error but pass")
 				return

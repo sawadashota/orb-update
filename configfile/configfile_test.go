@@ -1,10 +1,11 @@
-package orb_test
+package configfile_test
 
 import (
 	"bytes"
 	"os"
 	"testing"
 
+	"github.com/sawadashota/orb-update/configfile"
 	"github.com/sawadashota/orb-update/orb"
 )
 
@@ -53,7 +54,7 @@ func TestConfigFile_Parse(t *testing.T) {
 			}
 			defer file.Close()
 
-			cf, err := orb.NewConfigFile(file)
+			cf, err := configfile.New(file)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -159,7 +160,7 @@ job:
 			}
 			defer file.Close()
 
-			cf, err := orb.NewConfigFile(file)
+			cf, err := configfile.New(file)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -43,8 +43,8 @@ func New(namespace, name, version string) *Orb {
 	}
 }
 
-// ParseOrb format namespace/name@version
-func ParseOrb(orb string) (*Orb, error) {
+// Parse format namespace/name@version
+func Parse(orb string) (*Orb, error) {
 	splitVersion := strings.Split(orb, "@")
 	if len(splitVersion) != 2 {
 		return nil, errors.Errorf("Incorrect orb format: %s", orb)

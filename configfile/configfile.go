@@ -1,4 +1,4 @@
-package orb
+package configfile
 
 import (
 	"bufio"
@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sawadashota/orb-update/orb"
 	"gopkg.in/yaml.v2"
 )
 
@@ -22,8 +23,8 @@ type ConfigFile struct {
 	bytes []byte
 }
 
-// NewConfigFile .
-func NewConfigFile(r io.Reader) (*ConfigFile, error) {
+// New .
+func New(r io.Reader) (*ConfigFile, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -39,7 +40,7 @@ func (cf *ConfigFile) reader() io.Reader {
 }
 
 // Parse configuration file
-func (cf *ConfigFile) Parse() ([]*Orb, error) {
+func (cf *ConfigFile) Parse() ([]*orb.Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
@@ -47,9 +48,9 @@ func (cf *ConfigFile) Parse() ([]*Orb, error) {
 		return nil, err
 	}
 
-	var orbs []*Orb
-	for _, orb := range mapConfig.Orbs {
-		o, err := ParseOrb(orb)
+	var orbs []*orb.Orb
+	for _, orbStr := range mapConfig.Orbs {
+		o, err := orb.Parse(orbStr)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +62,7 @@ func (cf *ConfigFile) Parse() ([]*Orb, error) {
 }
 
 // Update writes updated orb version
-func (cf *ConfigFile) Update(w io.Writer, diff *Difference) error {
+func (cf *ConfigFile) Update(w io.Writer, diff *orb.Difference) error {
 	var b bytes.Buffer
 
 	scan := bufio.NewScanner(cf.reader())
