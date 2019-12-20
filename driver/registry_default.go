@@ -103,7 +103,12 @@ func (d *DefaultRegistry) CircleCIClient() orb.Client {
 // Handler .
 func (d *DefaultRegistry) Handler() *handler.Handler {
 	if d.h == nil {
-		d.h = handler.New(d, d.c)
+		opts := make([]handler.Option, 0)
+		if d.c.GitHubPullRequest() {
+			opts = append(opts, handler.WithPullRequestCreation())
+		}
+
+		d.h = handler.New(d, d.c, opts...)
 	}
 
 	return d.h

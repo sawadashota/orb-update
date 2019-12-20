@@ -162,13 +162,6 @@ workflows:
           checkout: false
           attach-workspace: true
           workspace-root: .
-      - orb-update/orb-update:
-          context: orb-update
-          name: orb-update-after-release
-          repository: sawadashota/orb-update
-          filters: *release_filter
-          requires:
-            - publish-orb
 
   orb-update:
     jobs:

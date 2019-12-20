@@ -7,13 +7,11 @@ import (
 )
 
 const (
-	// ViperRepositoryName can be set by cli option
-	ViperRepositoryName = "repository.name"
-	// ViperFilePath can be set by cli option
-	ViperFilePath = "file_path"
-
+	viperRepositoryName     = "repository.name"
+	viperFilePath           = "file_path"
 	viperGitAuthorName      = "git.author.name"
 	viperGitAuthorEmail     = "git.author.email"
+	viperPullRequest        = "github.pull_request"
 	viperGithubToken        = "github.token"
 	viperGithubUsername     = "github.username"
 	viperBaseBranch         = "base_branch"
@@ -41,6 +39,11 @@ func (v *ViperProvider) GitAuthorName() string {
 // GitAuthorEmail .
 func (v *ViperProvider) GitAuthorEmail() string {
 	return viper.GetString(viperGitAuthorEmail)
+}
+
+// GitHubPullRequest .
+func (v *ViperProvider) GitHubPullRequest() bool {
+	return viper.GetBool(viperPullRequest)
 }
 
 // GithubUsername .
@@ -81,10 +84,10 @@ func (v *ViperProvider) FilesystemStrategy() string {
 
 // RepositoryName .
 func (v *ViperProvider) RepositoryName() string {
-	return viper.GetString(ViperRepositoryName)
+	return viper.GetString(viperRepositoryName)
 }
 
 // FilePath .
 func (v *ViperProvider) FilePath() string {
-	return viper.GetString(ViperFilePath)
+	return viper.GetString(viperFilePath)
 }
