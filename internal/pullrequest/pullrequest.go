@@ -3,7 +3,7 @@ package pullrequest
 import (
 	"context"
 
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // Creator of Pull Request

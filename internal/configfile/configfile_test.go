@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sawadashota/orb-update/configfile"
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/configfile"
+
+	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 func containOrb(t *testing.T, needle *orb.Orb, haystack []*orb.Orb) bool {
