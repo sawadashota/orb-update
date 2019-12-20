@@ -3,7 +3,7 @@ package orb_test
 import (
 	"testing"
 
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 func TestParseOrb(t *testing.T) {

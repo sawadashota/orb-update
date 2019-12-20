@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sawadashota/orb-update/configfile"
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/configfile"
+	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // UpdateAll orbs

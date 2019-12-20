@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v28/github"
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/orb"
 	"golang.org/x/oauth2"
 )
 

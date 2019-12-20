@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sawadashota/orb-update/orb"
+	"github.com/sawadashota/orb-update/internal/orb"
 	"gopkg.in/yaml.v2"
 )
 

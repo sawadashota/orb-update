@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sawadashota/orb-update/filesystem"
+	"github.com/sawadashota/orb-update/internal/filesystem"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
