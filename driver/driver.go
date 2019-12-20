@@ -5,11 +5,7 @@ import "github.com/sawadashota/orb-update/driver/configuration"
 // Driver .
 type Driver interface {
 	Registry() Registry
-	Configuration() Configuration
-}
-
-type Configuration interface {
-	configuration.Provider
+	Configuration() configuration.Provider
 }
 
 // DefaultDriver .
@@ -39,6 +35,6 @@ func (d *DefaultDriver) Registry() Registry {
 }
 
 // Configuration .
-func (d *DefaultDriver) Configuration() Configuration {
+func (d *DefaultDriver) Configuration() configuration.Provider {
 	return d.c
 }
