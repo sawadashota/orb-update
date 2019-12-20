@@ -4,24 +4,41 @@ import "github.com/sawadashota/orb-update/driver/configuration"
 
 // Driver .
 type Driver interface {
-	Configuration() configuration.Provider
+	Registry() Registry
+	Configuration() Configuration
+}
+
+type Configuration interface {
+	configuration.Provider
 }
 
 // DefaultDriver .
 type DefaultDriver struct {
+	r Registry
 	c configuration.Provider
 }
 
 // NewDefaultDriver .
-func NewDefaultDriver() Driver {
+func NewDefaultDriver() (Driver, error) {
 	c := configuration.NewViperProvider()
 
-	return &DefaultDriver{
-		c: c,
+	r, err := NewDefaultRegistry(c)
+	if err != nil {
+		return nil, err
 	}
+
+	return &DefaultDriver{
+		r: r,
+		c: c,
+	}, nil
+}
+
+// Registry .
+func (d *DefaultDriver) Registry() Registry {
+	return d.r
 }
 
 // Configuration .
-func (d *DefaultDriver) Configuration() configuration.Provider {
+func (d *DefaultDriver) Configuration() Configuration {
 	return d.c
 }

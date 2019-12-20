@@ -11,4 +11,7 @@ type Provider interface {
 	BaseBranch() string
 
 	FilesystemStrategy() string
+
+	RepositoryName() string
+	FilePath() string
 }

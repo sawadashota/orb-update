@@ -7,6 +7,11 @@ import (
 )
 
 const (
+	// ViperRepositoryName can be set by cli option
+	ViperRepositoryName = "repository.name"
+	// ViperFilePath can be set by cli option
+	ViperFilePath = "file_path"
+
 	viperGitAuthorName      = "git.author.name"
 	viperGitAuthorEmail     = "git.author.email"
 	viperGithubToken        = "github.token"
@@ -72,4 +77,14 @@ func (v *ViperProvider) FilesystemStrategy() string {
 	}
 
 	return InMemoryFilesystemStrategy
+}
+
+// RepositoryName .
+func (v *ViperProvider) RepositoryName() string {
+	return viper.GetString(ViperRepositoryName)
+}
+
+// FilePath .
+func (v *ViperProvider) FilePath() string {
+	return viper.GetString(ViperFilePath)
 }

@@ -5,42 +5,45 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v28/github"
-	"github.com/sawadashota/orb-update/driver"
 	"github.com/sawadashota/orb-update/orb"
 	"golang.org/x/oauth2"
 )
 
 // GitHubPullRequest .
 type GitHubPullRequest struct {
-	d          driver.Driver
-	client     *github.Client
-	owner      string
-	repo       string
-	difference orb.Difference
+	c      Configuration
+	client *github.Client
+	owner  string
+	repo   string
+}
+
+// GitRepository .
+type GitRepository interface {
+	Owner() string
+	Name() string
 }
 
 // NewGitHubPullRequest .
-func NewGitHubPullRequest(ctx context.Context, d driver.Driver, owner string, repo string, diff *orb.Difference) (Creator, error) {
+func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) (Creator, error) {
 	tc := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: d.Configuration().GithubToken()},
+		&oauth2.Token{AccessToken: c.GithubToken()},
 	))
 
 	return &GitHubPullRequest{
-		d:          d,
-		client:     github.NewClient(tc),
-		owner:      owner,
-		repo:       repo,
-		difference: *diff,
+		c:      c,
+		client: github.NewClient(tc),
+		owner:  r.VCSRepository().Owner(),
+		repo:   r.VCSRepository().Name(),
 	}, nil
 }
 
 // Create Pull Request on GitHub
-func (g *GitHubPullRequest) Create(ctx context.Context, message, baseBranch string) error {
-	o := g.difference.New
+func (g *GitHubPullRequest) Create(ctx context.Context, diff *orb.Difference, message, baseBranch string) error {
+	o := diff.New
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
-		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), g.difference.Old.Version(), o.Version())),
+		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), diff.Old.Version(), o.Version())),
 		Body:  &message,
-		Base:  github.String(g.d.Configuration().BaseBranch()),
+		Base:  github.String(g.c.BaseBranch()),
 		Head:  github.String(baseBranch),
 	})
 
@@ -52,7 +55,7 @@ func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (
 	prs, _, err := g.client.PullRequests.List(ctx, g.owner, g.repo, &github.PullRequestListOptions{
 		State: "open",
 		Head:  branch,
-		Base:  g.d.Configuration().BaseBranch(),
+		Base:  g.c.BaseBranch(),
 	})
 	if err != nil {
 		return false, err
