@@ -163,6 +163,7 @@ workflows:
           attach-workspace: true
           workspace-root: .
       - orb-update/orb-update:
+          context: orb-update
           name: orb-update-after-release
           repository: sawadashota/orb-update
           filters: *release_filter
@@ -172,6 +173,7 @@ workflows:
   orb-update:
     jobs:
       - orb-update/orb-update:
+          context: orb-update
           name: daily-orb-update
           repository: sawadashota/orb-update
     triggers:
