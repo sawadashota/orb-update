@@ -1,28 +1,47 @@
 package handler
 
-import "io"
+import (
+	"io"
+	"os"
+)
 
 // Handler .
 type Handler struct {
-	r      Registry
-	c      Configuration
-	logger io.Writer
-
+	r                     Registry
+	c                     Configuration
+	logger                io.Writer
 	doesCreatePullRequest bool
 }
 
-// New Handler instance
-func New(r Registry, c Configuration) *Handler {
-	return &Handler{
-		r: r,
-		c: c,
+// Option for Handler
+type Option func(handler *Handler)
+
+// WithPullRequestCreation .
+func WithPullRequestCreation() Option {
+	return func(handler *Handler) {
+		handler.doesCreatePullRequest = true
 	}
 }
 
-func (h *Handler) UpdateAll() error {
-	return nil
+// WithLogger replace default logger
+func WithLogger(w io.Writer) Option {
+	return func(handler *Handler) {
+		handler.logger = w
+	}
 }
 
-func (h *Handler) Update() error {
-	return nil
+// New Handler instance
+func New(r Registry, c Configuration, opts ...Option) *Handler {
+	h := &Handler{
+		r:                     r,
+		c:                     c,
+		logger:                os.Stdout,
+		doesCreatePullRequest: false,
+	}
+
+	for _, opt := range opts {
+		opt(h)
+	}
+
+	return h
 }
