@@ -11,6 +11,9 @@ parameters:
   run-integration-tests:
     type: boolean
     default: false
+  dev-orb-version:
+    type: string
+    default: "dev:alpha"
 
 executors:
   circleci-cli:
@@ -90,45 +93,6 @@ jobs:
           path: circleci-orb/packed/orb.yml
           destination: orb.yml
 
-  clean_up_tags:
-    parameters:
-      cleanup-tags-pattern:
-        default: integration*
-        description: >
-          Before proceeding with pushing a tag to trigger an integration testing
-          workflow, optionally clean up all older tags that meet a given `git tag
-          -l` wildcard pattern. Defaults to a wildcard pattern including any tags
-          starting with the string `integration`. (Default is intended for use when
-          `tag` parameter is set to `master`.)
-        type: string
-      ssh-fingerprints:
-        default: ''
-        description: >
-          Fingerprints for SSH deploy key (add the public key as a read/write key on
-          GitHub; add the private key in CircleCI via SSH Permissions, with
-          github.com as Hostname). Used to push a git tag back to the project's
-          repository.
-        type: string
-    docker:
-      - image: cibuilds/base
-    steps:
-      - checkout
-      - when:
-          condition: <<parameters.ssh-fingerprints>>
-          steps:
-            - add_ssh_keys:
-                fingerprints:
-                  - <<parameters.ssh-fingerprints>>
-      - run:
-          name: cleanup old remote tags
-          command: |
-            # delete local tags
-            git tag -d $(git tag -l "<<parameters.cleanup-tags-pattern>>")
-            # fetch remote tags
-            git fetch
-            # delete remote tag
-            git push origin --delete $(git tag -l git tag -l "<<parameters.cleanup-tags-pattern>>")
-
 release_filters: &release_filters
   tags:
     only: /.*/
@@ -192,9 +156,6 @@ workflows:
                   source $BASH_ENV
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
-      - clean_up_tags:
-          requires: [test-in-builds-integration_dev]
-          ssh-fingerprints: 53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77
 
   master:
     jobs:
