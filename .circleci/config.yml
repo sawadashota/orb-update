@@ -148,6 +148,7 @@ workflows:
           context: orb-publishing
           requires: [pack-integration_dev]
           orb-name: orb-update-alpha
+          orb-location: circleci-orb/packed/orb.yml
           attach-workspace: true
           test-steps:
             - checkout
