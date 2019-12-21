@@ -7,6 +7,11 @@ orbs:
   orb-tools: circleci/orb-tools@9.0.0
   envsubst: sawadashota/envsubst@1.1.0
 
+parameters:
+  run-integration-tests:
+    type: boolean
+    default: false
+
 executors:
   circleci-cli:
     docker:
@@ -124,12 +129,6 @@ jobs:
             # delete remote tag
             git push origin --delete $(git tag -l git tag -l "<<parameters.cleanup-tags-pattern>>")
 
-integration_dev_filters: &integration_dev_filters
-  branches:
-    ignore: /.*/
-  tags:
-    only: /integration-.*/
-
 release_filters: &release_filters
   tags:
     only: /.*/
@@ -171,17 +170,14 @@ workflows:
           name: trigger-integration-workflow-dev
           context: orb-publishing
           requires: [publish-orb-dev]
-          use-git-diff: false
-          ssh-fingerprints: 53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77
 
   integration_dev:
+    when: << pipeline.parameters.run-integration-tests >>
     jobs:
       - orb-tools/pack:
           name: pack-integration_dev
-          filters: *integration_dev_filters
       - orb-tools/test-in-builds:
           name: test-in-builds-integration_dev
-          filters: *integration_dev_filters
           context: orb-publishing
           requires: [pack-integration_dev]
           orb-name: orb-update-alpha
@@ -197,7 +193,6 @@ workflows:
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
       - clean_up_tags:
-          filters: *integration_dev_filters
           requires: [test-in-builds-integration_dev]
           ssh-fingerprints: 53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77
 
