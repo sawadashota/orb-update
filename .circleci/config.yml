@@ -148,7 +148,7 @@ workflows:
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/test-in-builds:
           name: test-in-builds-integration_dev
-          context: orb-publishing
+          context: orb-update
           requires: [pack-integration_dev]
           orb-name: orb-update-alpha
           orb-location: workspace/circleci-orb/packed/orb.yml
