@@ -83,8 +83,7 @@ examples:
       workflows:
         orb-update:
           jobs:
-            - orb-update/orb-update:
-                repository: sawadashota/orb-update
+            - orb-update/orb-update
           triggers:
             - schedule:
                 cron: "0 19 * * *"
