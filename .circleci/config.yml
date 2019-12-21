@@ -109,7 +109,7 @@ workflows:
           name: build-docker-image-dev
           deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-          tag: ${CIRCLE_SHA1}
+          tag: dev-${CIRCLE_SHA1}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
       - docker/hadolint:
@@ -162,7 +162,7 @@ workflows:
                   source $BASH_ENV
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
-                docker_image_version: ${CIRCLE_SHA1}
+                docker_image_version: dev-${CIRCLE_SHA1}
 
   master:
     jobs:
