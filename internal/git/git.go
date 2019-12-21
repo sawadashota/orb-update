@@ -110,11 +110,17 @@ func (d *DefaultGitClient) Switch(branch string, create bool) error {
 		return errors.Errorf(`failed to git branch switch because "%s"`, err)
 	}
 
-	return w.Checkout(&git.CheckoutOptions{
+	err = w.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName("refs/heads/" + branch),
 		Create: create,
 		Keep:   true,
 	})
+
+	if err != nil {
+		return errors.Errorf(`failed to switch branch because "%s"`, err)
+	}
+
+	return nil
 }
 
 // SwitchBack tp origin branch
@@ -124,10 +130,16 @@ func (d *DefaultGitClient) SwitchBack() error {
 		return errors.Errorf(`Failed to git branch switch back because "%s"`, err)
 	}
 
-	return w.Checkout(&git.CheckoutOptions{
+	err = w.Checkout(&git.CheckoutOptions{
 		Branch: plumbing.ReferenceName("refs/heads/" + d.BaseBranch()),
 		Force:  true,
 	})
+
+	if err != nil {
+		return errors.Errorf(`failed to switch branch because "%s"`, err)
+	}
+
+	return nil
 }
 
 // Commit .
