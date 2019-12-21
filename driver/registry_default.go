@@ -2,6 +2,9 @@ package driver
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"os"
 
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
@@ -11,8 +14,12 @@ import (
 	"github.com/sawadashota/orb-update/internal/pullrequest"
 )
 
+// Logger  of default
+var Logger io.Writer = os.Stdout
+
 // DefaultRegistry .
 type DefaultRegistry struct {
+	l    io.Writer
 	c    configuration.Provider
 	g    git.Git
 	repo *git.Repository
@@ -29,6 +36,7 @@ var _ Registry = new(DefaultRegistry)
 // NewDefaultRegistry .
 func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr := &DefaultRegistry{
+		l:  Logger,
 		c:  c,
 		cl: orb.NewDefaultClient(),
 	}
@@ -44,6 +52,11 @@ func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr.pr = pr
 
 	return dr, nil
+}
+
+// Logger .
+func (d *DefaultRegistry) Logger() io.Writer {
+	return d.l
 }
 
 func (d *DefaultRegistry) setupRepository() error {
@@ -62,6 +75,8 @@ func (d *DefaultRegistry) setupRepository() error {
 	if err != nil {
 		return err
 	}
+
+	_, _ = fmt.Fprintf(d.l, "cloning %s ...\n", repo)
 
 	g, fs, err := git.Clone(d.c, repo.Owner(), repo.Name())
 	if err != nil {

@@ -1,6 +1,8 @@
 package driver
 
 import (
+	"io"
+
 	"github.com/sawadashota/orb-update/handler"
 	"github.com/sawadashota/orb-update/internal/filesystem"
 	"github.com/sawadashota/orb-update/internal/git"
@@ -10,6 +12,8 @@ import (
 
 // Registry .
 type Registry interface {
+	Logger() io.Writer
+
 	Git() git.Git
 	Filesystem() filesystem.Filesystem
 	PullRequest() pullrequest.Creator
