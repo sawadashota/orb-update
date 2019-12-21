@@ -51,7 +51,7 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 		}
 
 		if alreadyCreated {
-			_, _ = fmt.Fprintf(h.logger, "PR for %s has been already created\n", diff.New.String())
+			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", diff.New.String())
 			return nil
 		}
 
@@ -66,7 +66,7 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 	}
 
 	_, _ = fmt.Fprintf(
-		h.logger,
+		h.r.Logger(),
 		"Updating %s/%s (%s => %s)\n",
 		diff.New.Namespace(),
 		diff.New.Name(),

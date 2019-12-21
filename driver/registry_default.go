@@ -2,6 +2,8 @@ package driver
 
 import (
 	"context"
+	"io"
+	"os"
 
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
@@ -13,6 +15,7 @@ import (
 
 // DefaultRegistry .
 type DefaultRegistry struct {
+	l    io.Writer
 	c    configuration.Provider
 	g    git.Git
 	repo *git.Repository
@@ -29,6 +32,7 @@ var _ Registry = new(DefaultRegistry)
 // NewDefaultRegistry .
 func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr := &DefaultRegistry{
+		l:  os.Stdout,
 		c:  c,
 		cl: orb.NewDefaultClient(),
 	}
@@ -44,6 +48,11 @@ func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr.pr = pr
 
 	return dr, nil
+}
+
+// Logger .
+func (d *DefaultRegistry) Logger() io.Writer {
+	return d.l
 }
 
 func (d *DefaultRegistry) setupRepository() error {
