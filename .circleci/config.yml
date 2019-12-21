@@ -107,8 +107,11 @@ workflows:
       - test-go
       - docker/publish:
           name: build-docker-image-dev
-          deploy: false
+          deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: ${CIRCLE_SHA1}
+          docker-username: DOCKER_LOGIN
+          docker-password: DOCKER_PASSWORD
       - docker/hadolint:
           name: hadolint-dev
           # https://github.com/hadolint/hadolint/wiki/DL3018
@@ -159,6 +162,7 @@ workflows:
                   source $BASH_ENV
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
+                docker_image_version: ${CIRCLE_SHA1}
 
   master:
     jobs:

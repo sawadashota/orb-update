@@ -51,7 +51,7 @@ commands:
           name: Update Orbs
           command: |
             docker run --rm \
-              -v `pwd`/<< parameters.config >>:/repo/.orb-update.yml \
+              -v $(pwd)/<< parameters.config >>:/repo/.orb-update.yml \
               -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
               -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
               sawadashota/orb-update:<< parameters.docker_image_version >>
