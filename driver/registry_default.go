@@ -45,11 +45,7 @@ func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 		return nil, err
 	}
 
-	pr, err := pullrequest.NewGitHubPullRequest(context.Background(), dr, c)
-	if err != nil {
-		return nil, err
-	}
-	dr.pr = pr
+	dr.pr = pullrequest.NewGitHubPullRequest(context.Background(), dr, c)
 
 	return dr, nil
 }

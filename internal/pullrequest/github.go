@@ -26,7 +26,7 @@ type GitRepository interface {
 }
 
 // NewGitHubPullRequest .
-func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) (Creator, error) {
+func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) Creator {
 	tc := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: c.GithubToken()},
 	))
@@ -36,7 +36,7 @@ func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) (Cre
 		client: github.NewClient(tc),
 		owner:  r.VCSRepository().Owner(),
 		repo:   r.VCSRepository().Name(),
-	}, nil
+	}
 }
 
 // Create Pull Request on GitHub
@@ -49,7 +49,11 @@ func (g *GitHubPullRequest) Create(ctx context.Context, diff *orb.Difference, me
 		Head:  github.String(baseBranch),
 	})
 
-	return err
+	if err != nil {
+		return errors.Errorf(`failed to create pull request because "%s"`, err)
+	}
+
+	return nil
 }
 
 // AlreadyCreated Pull Request or not
