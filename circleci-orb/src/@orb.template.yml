@@ -11,23 +11,18 @@ description: |
   Update CircleCI Orbs versions
   https://github.com/sawadashota/orb-update
 
+orbs:
+  docker: circleci/docker@0.5.19
 executors:
-  docker:
+  default:
     docker:
-      - image: docker:19.03.5
+      - image: circleci/python:3.8
 commands:
   orb-update:
     description: >
       Execute orb-update command via docker command.
       Update each Orb version and create Pull Request on GitHub.
     parameters: &parameters
-      base_branch:
-        description: Base branch name of Pull Request
-        type: string
-        default: master
-      repository:
-        description: Repository name to update Orb ex) sawadashota/orb-update
-        type: string
       github_username:
         description: Username of GitHub Token's owner
         type: env_var_name
@@ -38,14 +33,12 @@ commands:
           https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension
         type: env_var_name
         default: GITHUB_TOKEN
-      git_author_user:
-        description: Name for commit signature
-        type: env_var_name
-        default: GIT_AUTHOR_NAME
-      git_author_email:
-        description: Email for commit signature
-        type: env_var_name
-        default: GIT_AUTHOR_EMAIL
+      config:
+        description: |
+          Path of configuration for orb-update
+          This option is for self testing. So please put config file at `.orb-update.yml`
+        type: string
+        default: .orb-update.yml
       docker_image_version:
         description: |
           Version of docker image sawadashota/orb-update
@@ -58,30 +51,25 @@ commands:
           name: Update Orbs
           command: |
             docker run --rm \
-             -e BASE_BRANCH="<< parameters.base_branch >>" \
-             -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
-             -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
-             -e GIT_AUTHOR_NAME="$<< parameters.git_author_user >>" \
-             -e GIT_AUTHOR_EMAIL="${<< parameters.git_author_email >>}" \
-             -e FILESYSTEM_STRATEGY=memory \
-             sawadashota/orb-update:<< parameters.docker_image_version >> \
-             orb-update -r "<< parameters.repository >>" --pull-request
+              -v << parameters.config >>:/repo/.orb-update.yml
+              -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
+              -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
+              sawadashota/orb-update:<< parameters.docker_image_version >>
 jobs:
   orb-update:
     description: >
       Execute orb-update command.
       Update each Orb version and create Pull Request on GitHub.
-    executor: docker
+    executor: default
     parameters: *parameters
     steps:
+      - checkout
+      - docker/install-docker
       - setup_remote_docker
       - orb-update:
-          base_branch: << parameters.base_branch >>
-          repository: << parameters.repository >>
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
-          git_author_user: << parameters.git_author_user >>
-          git_author_email: << parameters.git_author_email >>
+          config: << parameters.config >>
           docker_image_version: << parameters.docker_image_version >>
 
 examples:
