@@ -45,7 +45,7 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 	ctx := context.Background()
 
 	if h.doesCreatePullRequest {
-		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, branchForPR(diff))
+		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, branchForPR(h.c.FilePath(), diff))
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 			return nil
 		}
 
-		if err := h.r.Git().Switch(branchForPR(diff), true); err != nil {
+		if err := h.r.Git().Switch(branchForPR(h.c.FilePath(), diff), true); err != nil {
 			return err
 		}
 		defer func() {
@@ -93,19 +93,19 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 		return err
 	}
 
-	if err := h.r.Git().Push(ctx, branchForPR(diff)); err != nil {
+	if err := h.r.Git().Push(ctx, branchForPR(h.c.FilePath(), diff)); err != nil {
 		return err
 	}
 
-	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), branchForPR(diff)); err != nil {
+	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), branchForPR(h.c.FilePath(), diff)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func branchForPR(diff *orb.Difference) string {
-	return fmt.Sprintf("orb-update/%s/%s-%s", diff.New.Namespace(), diff.New.Name(), diff.New.Version())
+func branchForPR(filePath string, diff *orb.Difference) string {
+	return fmt.Sprintf("orb-update/%s/%s/%s-%s", filePath, diff.New.Namespace(), diff.New.Name(), diff.New.Version())
 }
 
 func commitMessage(diff *orb.Difference) string {
