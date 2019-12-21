@@ -27,6 +27,3 @@ filesystem:
   # default is `os` for easy to use in local
   # but in CI, `memory` is recommended
   strategy: memory
-
-# ignore list of orb updates
-ignore: []

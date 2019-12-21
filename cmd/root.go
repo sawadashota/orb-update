@@ -1,33 +1,55 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"github.com/sawadashota/orb-update/driver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// RootCmd .
-func RootCmd() *cobra.Command {
-	var config string
+var RootCmd = &cobra.Command{
+	Use:   "orb-update",
+	Short: "Update CircleCI Orb versions",
+	RunE: func(_ *cobra.Command, _ []string) error {
+		d, err := driver.NewDefaultDriver()
+		if err != nil {
+			return err
+		}
 
-	c := &cobra.Command{
-		Use:     "orb-update",
-		Short:   "Update CircleCI Orb versions",
-		Example: "",
-		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.AddConfigPath(config)
-		},
-		RunE: func(_ *cobra.Command, _ []string) error {
-			d, err := driver.NewDefaultDriver()
-			if err != nil {
-				return err
-			}
+		return d.Registry().Handler().UpdateAll()
+	},
+}
 
-			return d.Registry().Handler().UpdateAll()
-		},
+// Execute adds all child commands to the root command sets flags appropriately.
+func Execute() {
+	if err := RootCmd.Execute(); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+}
 
-	c.Flags().StringVarP(&config, "config", "c", ".orb-update.yml", "configuration file for orb-update")
+// configuration file path for orb-update
+var config string
 
-	return c
+func initConfig() {
+	viper.SetConfigFile(config)
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, `Config file not found because "%s\n`, err)
+	}
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	// Here you will define your flags and configuration settings.
+	// Cobra supports Persistent Flags, which, if defined here,
+	// will be global for your application.
+	RootCmd.PersistentFlags().StringVarP(&config, "config", "c", ".orb-update.yml", "configuration file path for orb-update")
 }

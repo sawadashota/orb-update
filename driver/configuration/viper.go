@@ -1,8 +1,6 @@
 package configuration
 
 import (
-	"strings"
-
 	"github.com/spf13/viper"
 )
 
@@ -17,11 +15,6 @@ const (
 	viperBaseBranch         = "base_branch"
 	viperFilesystemStrategy = "filesystem.strategy"
 )
-
-func init() {
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv()
-}
 
 // ViperProvider .
 type ViperProvider struct{}

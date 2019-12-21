@@ -34,8 +34,3 @@ filesystem:
   # default is `os` for easy to use in local
   # but in CI, `memory` is recommended
   strategy: os
-
-# ignore list of orb updates
-ignore:
-  - circleci/welcome-orb
-  - circleci/hello-build
