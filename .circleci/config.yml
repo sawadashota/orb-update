@@ -88,17 +88,23 @@ workflows:
   version: 2
   dev:
     jobs:
-      - test-go
+      - test-go:
+          filters: &dev_filter
+            branches:
+              ignore: master
       - docker/publish:
           name: build-docker-image-dev
+          filters: *dev_filter
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       - docker/hadolint:
           name: hadolint-dev
+          filters: *dev_filter
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
           name: pack-orb-dev
+          filters: *dev_filter
           docker_image_latest_tag: DOCKER_LATEST_TAG
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
