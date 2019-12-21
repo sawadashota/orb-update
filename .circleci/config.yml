@@ -130,6 +130,7 @@ workflows:
   release:
     jobs:
       - release-binary:
+          context: goreleaser
           filters: &release_filter
             tags:
               only: /.*/
@@ -168,7 +169,6 @@ workflows:
       - orb-update/orb-update:
           context: orb-update
           name: daily-orb-update
-          repository: sawadashota/orb-update
     triggers:
       - schedule:
           cron: "0 10 * * *"  # minute hour day month week (UTC)
