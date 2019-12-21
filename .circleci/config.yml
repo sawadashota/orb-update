@@ -167,7 +167,7 @@ workflows:
       # Push `integration` tag to VCS and kick `integration_dev` workflow
       # because it's impossible to publish and use the orb in a same workflow.
       # https://circleci.com/orbs/registry/orb/circleci/orb-tools?version=8.27.5#jobs-trigger-integration-workflow
-      - orb-tools/trigger-integration-workflow:
+      - orb-tools/trigger-integration-tests-workflow:
           name: trigger-integration-workflow-dev
           context: orb-publishing
           requires: [publish-orb-dev]
