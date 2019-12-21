@@ -19,6 +19,19 @@ executors:
   circleci-cli:
     docker:
       - image: circleci/circleci-cli:latest
+commands:
+  close-test-pr:
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77"
+      - run:
+          name: Close test PR
+          command: |
+            git branch -r \
+              | grep origin/orb-update/circleci/test/config.yml \
+              | sed -e "s/origin\///g" \
+              | xargs -I{} git push --delete origin {}
 
 jobs:
   test-go:
@@ -93,6 +106,10 @@ jobs:
           path: circleci-orb/packed/orb.yml
           destination: orb.yml
 
+dev_filters: &dev_filters
+  branches:
+    ignore: /^orb-update\/circleci\/test/\config\.yml/
+
 release_filters: &release_filters
   tags:
     only: /.*/
@@ -104,9 +121,11 @@ workflows:
   dev:
     unless: << pipeline.parameters.run-integration-tests >>
     jobs:
-      - test-go
+      - test-go:
+          filters: *dev_filters
       - docker/publish:
           name: publish-docker-image-dev
+          filters: *dev_filters
           deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: dev-${CIRCLE_SHA1}
@@ -114,10 +133,12 @@ workflows:
           docker-password: DOCKER_PASSWORD
       - docker/hadolint:
           name: hadolint-dev
+          filters: *dev_filters
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
           name: pack-orb-dev
+          filters: *dev_filters
           docker_image_latest_tag: DOCKER_LATEST_TAG
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
@@ -164,6 +185,7 @@ workflows:
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
                 docker_image_version: dev-${CIRCLE_SHA1}
+            - close-test-pr
 
   master:
     jobs:
