@@ -138,8 +138,10 @@ workflows:
   integration_dev:
     when: << pipeline.parameters.run-integration-tests >>
     jobs:
-      - orb-tools/pack:
+      - pack-orb:
           name: pack-integration_dev
+          docker_image_latest_tag: DOCKER_LATEST_TAG
+          orb_latest_version: ORB_LATEST_TAG
       - orb-tools/test-in-builds:
           name: test-in-builds-integration_dev
           context: orb-publishing
