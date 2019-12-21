@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 
@@ -71,6 +72,8 @@ func (d *DefaultRegistry) setupRepository() error {
 	if err != nil {
 		return err
 	}
+
+	_, _ = fmt.Fprintf(d.l, "cloning %s ...\n", repo)
 
 	g, fs, err := git.Clone(d.c, repo.Owner(), repo.Name())
 	if err != nil {
