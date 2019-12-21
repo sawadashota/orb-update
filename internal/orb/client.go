@@ -3,6 +3,7 @@ package orb
 import (
 	"github.com/CircleCI-Public/circleci-cli/api"
 	"github.com/CircleCI-Public/circleci-cli/client"
+	"github.com/pkg/errors"
 )
 
 // Client of CircleCI API
@@ -31,7 +32,7 @@ func NewDefaultClient() *DefaultClient {
 func (c *DefaultClient) LatestVersion(orb *Orb) (*Orb, error) {
 	version, err := api.OrbLatestVersion(c.Client, orb.namespace, orb.name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf(`failed to fetch orb's latest version  because "%s"`, err)
 	}
 
 	return New(orb.namespace, orb.name, version), nil

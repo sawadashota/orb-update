@@ -51,10 +51,11 @@ commands:
           name: Update Orbs
           command: |
             docker run --rm \
-              -v << parameters.config >>:/repo/.orb-update.yml
+              -v $(pwd)/<< parameters.config >>:/orb-update/.orb-update.yml \
               -e GITHUB_USERNAME="${<< parameters.github_username >>}" \
               -e GITHUB_TOKEN="${<< parameters.github_token >>}" \
-              sawadashota/orb-update:<< parameters.docker_image_version >>
+              sawadashota/orb-update:<< parameters.docker_image_version >> \
+              orb-update -c /orb-update/.orb-update.yml
 jobs:
   orb-update:
     description: >
@@ -65,12 +66,12 @@ jobs:
     steps:
       - checkout
       - docker/install-docker
-      - setup_remote_docker
       - orb-update:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           config: << parameters.config >>
           docker_image_version: << parameters.docker_image_version >>
+      - setup_remote_docker
 
 examples:
   update-every-night:
@@ -83,8 +84,7 @@ examples:
       workflows:
         orb-update:
           jobs:
-            - orb-update/orb-update:
-                repository: sawadashota/orb-update
+            - orb-update/orb-update
           triggers:
             - schedule:
                 cron: "0 19 * * *"

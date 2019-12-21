@@ -2,14 +2,39 @@ version: 2.1
 
 orbs:
   orb-update: sawadashota/orb-update@volatile
+  orb-update-alpha: sawadashota/orb-update@dev:alpha
   docker: circleci/docker@0.5.20
   orb-tools: circleci/orb-tools@9.0.0
   envsubst: sawadashota/envsubst@1.1.0
+
+parameters:
+  run-integration-tests:
+    type: boolean
+    default: false
+  dev-orb-version:
+    type: string
+    default: "dev:alpha"
 
 executors:
   circleci-cli:
     docker:
       - image: circleci/circleci-cli:latest
+
+commands:
+  close-test-pr:
+    description: Close and delete branches created in tests
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77"
+      - run: git fetch
+      - run:
+          name: Close test PR
+          command: |
+            git branch -r \
+              | grep origin/orb-update/circleci/test/config.yml \
+              | sed -e "s/origin\///g" \
+              | xargs -I{} git push --delete origin {}
 
 jobs:
   test-go:
@@ -84,28 +109,45 @@ jobs:
           path: circleci-orb/packed/orb.yml
           destination: orb.yml
 
+dev_filters: &dev_filters
+  branches:
+    ignore: /^orb-update\/circleci\/test\/.*/
+
+release_filters: &release_filters
+  tags:
+    only: /.*/
+  branches:
+    ignore: /.*/
+
 workflows:
   version: 2
   dev:
+    unless: << pipeline.parameters.run-integration-tests >>
     jobs:
-      - test-go
+      - test-go:
+          filters: *dev_filters
       - docker/publish:
-          name: build-docker-image-dev
-          deploy: false
+          name: publish-docker-image-dev
+          filters: *dev_filters
+          deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: dev-${CIRCLE_SHA1}
+          docker-username: DOCKER_LOGIN
+          docker-password: DOCKER_PASSWORD
       - docker/hadolint:
           name: hadolint-dev
+          filters: *dev_filters
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
           name: pack-orb-dev
+          filters: *dev_filters
           docker_image_latest_tag: DOCKER_LATEST_TAG
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
           name: publish-orb-dev
           context: orb-publishing
-          requires:
-            - pack-orb-dev
+          requires: [pack-orb-dev]
           orb-name: sawadashota/orb-update
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN
@@ -113,6 +155,40 @@ workflows:
           checkout: false
           attach-workspace: true
           workspace-root: .
+      # Push `integration` tag to VCS and kick `integration_dev` workflow
+      # because it's impossible to publish and use the orb in a same workflow.
+      # https://circleci.com/orbs/registry/orb/circleci/orb-tools?version=8.27.5#jobs-trigger-integration-workflow
+      - orb-tools/trigger-integration-tests-workflow:
+          name: trigger-integration-workflow-dev
+          context: orb-publishing
+          requires: [publish-orb-dev, publish-docker-image-dev]
+
+  integration_dev:
+    when: << pipeline.parameters.run-integration-tests >>
+    jobs:
+      - pack-orb:
+          name: pack-integration_dev
+          docker_image_latest_tag: DOCKER_LATEST_TAG
+          orb_latest_version: ORB_LATEST_TAG
+      - orb-tools/test-in-builds:
+          name: test-in-builds-integration_dev
+          context: orb-update
+          requires: [pack-integration_dev]
+          orb-name: orb-update-alpha
+          orb-location: workspace/circleci-orb/packed/orb.yml
+          attach-workspace: true
+          test-steps:
+            - checkout
+            - envsubst/install
+            - run:
+                name: Embed environment variables to .circleci/test/.orb-update.yml
+                command: |
+                  ENVSUBST_BASE_BRANCH=${CIRCLE_BRANCH} \
+                    envsubst < .circleci/test/.orb-update.template.yml > .circleci/test/.orb-update.yml
+            - orb-update-alpha/orb-update:
+                config: .circleci/test/.orb-update.yml
+                docker_image_version: dev-${CIRCLE_SHA1}
+            - close-test-pr
 
   master:
     jobs:
@@ -131,14 +207,10 @@ workflows:
     jobs:
       - release-binary:
           context: goreleaser
-          filters: &release_filter
-            tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+          filters: *release_filters
       - docker/publish:
           name: publish-docker-image
-          filters: *release_filter
+          filters: *release_filters
           deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: ${CIRCLE_TAG}
@@ -146,16 +218,14 @@ workflows:
           docker-password: DOCKER_PASSWORD
       - pack-orb:
           name: pack-relase-orb
-          filters: *release_filter
+          filters: *release_filters
           docker_image_latest_tag: CIRCLE_TAG
           orb_latest_version: CIRCLE_TAG
       - orb-tools/publish:
           name: publish-orb
-          filters: *release_filter
+          filters: *release_filters
           context: orb-publishing
-          requires:
-            - publish-docker-image
-            - pack-relase-orb
+          requires: [publish-docker-image, pack-relase-orb]
           orb-ref: sawadashota/orb-update@${CIRCLE_TAG}
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN

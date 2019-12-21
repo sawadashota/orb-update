@@ -16,6 +16,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/sawadashota/orb-update/orb-update /usr/bin/orb-update
 
 USER 1000
-WORKDIR /repo
+WORKDIR /orb-update
 
 CMD ["orb-update"]

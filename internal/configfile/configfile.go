@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/sawadashota/orb-update/internal/orb"
 	"gopkg.in/yaml.v2"
 )
@@ -27,7 +29,7 @@ type ConfigFile struct {
 func New(r io.Reader) (*ConfigFile, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf(`failed to read config file because "%s"`, err)
 	}
 
 	return &ConfigFile{
@@ -45,7 +47,7 @@ func (cf *ConfigFile) Parse() ([]*orb.Orb, error) {
 		Orbs map[string]string
 	}
 	if err := yaml.NewDecoder(cf.reader()).Decode(&mapConfig); err != nil {
-		return nil, err
+		return nil, errors.Errorf(`failed to decode config file of orb-update because "%s"`, err)
 	}
 
 	var orbs []*orb.Orb
