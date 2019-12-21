@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sawadashota/orb-update/internal/configfile"
 	"github.com/sawadashota/orb-update/internal/orb"
@@ -105,7 +106,8 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 }
 
 func branchForPR(filePath string, diff *orb.Difference) string {
-	return fmt.Sprintf("orb-update/%s/%s/%s-%s", filePath, diff.New.Namespace(), diff.New.Name(), diff.New.Version())
+	branch := fmt.Sprintf("orb-update/%s/%s/%s-%s", filePath, diff.New.Namespace(), diff.New.Name(), diff.New.Version())
+	return strings.ReplaceAll(branch, "/.", "/")
 }
 
 func commitMessage(diff *orb.Difference) string {
