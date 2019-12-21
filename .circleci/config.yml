@@ -151,8 +151,6 @@ workflows:
           attach-workspace: true
           test-steps:
             - checkout
-            - docker/install-docker
-            - setup_remote_docker
             - run:
                 name: Setting Environmnet varible for orb-update
                 command: |
