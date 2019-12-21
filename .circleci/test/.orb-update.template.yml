@@ -20,8 +20,7 @@ github:
 
 # base branch
 # default is `master`
-# This variable will be injected by environment variable `BASE_BRANCH`
-# base_branch: master
+base_branch: ${ENVSUBST_BASE_BRANCH} # will be replaced by envsubst
 
 filesystem:
   # filesystem strategy supports `os` and `memory`

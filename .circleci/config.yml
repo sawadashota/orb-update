@@ -155,11 +155,12 @@ workflows:
           attach-workspace: true
           test-steps:
             - checkout
+            - envsubst/install
             - run:
-                name: Setting Environmnet varible for orb-update
+                name: Embed environment variables to .circleci/test/.orb-update.yml
                 command: |
-                  echo "export BASE_BRANCH=${CIRCLE_BRANCH}" >> $BASH_ENV
-                  source $BASH_ENV
+                  ENVSUBST_BASE_BRANCH=${CIRCLE_BRANCH} \
+                    envsubst < .circleci/test/.orb-update.template.yml > .circleci/test/.orb-update.yml
             - orb-update-alpha/orb-update:
                 config: .circleci/test/.orb-update.yml
                 docker_image_version: dev-${CIRCLE_SHA1}
