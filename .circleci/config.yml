@@ -103,7 +103,7 @@ workflows:
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
           name: publish-orb-dev
-          context: circleci
+          context: orb-publishing
           requires:
             - pack-orb-dev
           orb-name: sawadashota/orb-update
@@ -151,7 +151,7 @@ workflows:
       - orb-tools/publish:
           name: publish-orb
           filters: *release_filter
-          context: circleci
+          context: orb-publishing
           requires:
             - publish-docker-image
             - pack-relase-orb
