@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  orb-update:
+    build:
+      context: "."
+    environment:
+      GITHUB_USERNAME: "${GITHUB_USERNAME}"
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+    volumes:
+    - ".orb-update.yml:/repo/.orb-update.yml"

@@ -5,6 +5,7 @@ type Provider interface {
 	GitAuthorName() string
 	GitAuthorEmail() string
 
+	GitHubPullRequest() bool
 	GithubUsername() string
 	GithubToken() string
 

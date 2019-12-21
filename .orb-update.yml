@@ -1,0 +1,29 @@
+# target config file path
+# default is `.circleci/config.yml`
+file_path: .circleci/config.yml
+
+repository:
+  # name of this repository
+  name: sawadashota/orb-update
+
+git:
+  # author of commit
+  # require when Pull Request Creation
+  author:
+    name: sawadashota
+    email: xiootas@gmail.com
+
+github:
+  # Pull Request creation option
+  # default is false
+  pull_request: true
+
+# base branch
+# default is `master`
+base_branch: master
+
+filesystem:
+  # filesystem strategy supports `os` and `memory`
+  # default is `os` for easy to use in local
+  # but in CI, `memory` is recommended
+  strategy: memory
