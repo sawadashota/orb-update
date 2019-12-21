@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/sawadashota/orb-update/internal/filesystem"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
@@ -57,12 +59,12 @@ func Clone(c Configuration, owner, name string) (Git, filesystem.Filesystem, err
 	})
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Errorf(`failed to git clone because "%s"`, err)
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Errorf(`failed to retrieve git head because "%s"`, err)
 	}
 
 	return &DefaultGitClient{
@@ -76,17 +78,17 @@ func Clone(c Configuration, owner, name string) (Git, filesystem.Filesystem, err
 func OpenCurrentDirectoryRepository(c Configuration) (Git, filesystem.Filesystem, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Errorf(`failed to retrieve because "%s"`, err)
 	}
 
 	repo, err := git.PlainOpen(pwd)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Errorf(`failed to open git repository because "%s"`, err)
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Errorf(`failed to retrieve git head because "%s"`, err)
 	}
 
 	return &DefaultGitClient{
@@ -105,7 +107,7 @@ func (d *DefaultGitClient) BaseBranch() string {
 func (d *DefaultGitClient) Switch(branch string, create bool) error {
 	w, err := d.repo.Worktree()
 	if err != nil {
-		return err
+		return errors.Errorf(`failed to git branch switch because "%s"`, err)
 	}
 
 	return w.Checkout(&git.CheckoutOptions{
@@ -119,7 +121,7 @@ func (d *DefaultGitClient) Switch(branch string, create bool) error {
 func (d *DefaultGitClient) SwitchBack() error {
 	w, err := d.repo.Worktree()
 	if err != nil {
-		return err
+		return errors.Errorf(`Failed to git branch switch back because "%s"`, err)
 	}
 
 	return w.Checkout(&git.CheckoutOptions{
@@ -132,7 +134,7 @@ func (d *DefaultGitClient) SwitchBack() error {
 func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, error) {
 	w, err := d.repo.Worktree()
 	if err != nil {
-		return "", err
+		return "", errors.Errorf(`failed to retrieve git work tree because "%s"`, err)
 	}
 
 	if _, err := w.Add(path); err != nil {
@@ -147,7 +149,7 @@ func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, erro
 		},
 	})
 	if err != nil {
-		return "", err
+		return "", errors.Errorf(`failed to commit because "%s"`, err)
 	}
 
 	return CommitHash(h.String()), nil

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
+
 	"github.com/google/go-github/v28/github"
 	"github.com/sawadashota/orb-update/internal/orb"
 	"golang.org/x/oauth2"
@@ -58,7 +60,7 @@ func (g *GitHubPullRequest) AlreadyCreated(ctx context.Context, branch string) (
 		Base:  g.c.BaseBranch(),
 	})
 	if err != nil {
-		return false, err
+		return false, errors.Errorf(`failed to fetch pull request list because "%s"`, err)
 	}
 
 	for _, pr := range prs {
