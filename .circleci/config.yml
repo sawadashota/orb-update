@@ -122,7 +122,7 @@ workflows:
           context: orb-publishing
           requires: [pack-orb-dev]
           orb-name: sawadashota/orb-update
-          orb-path: workspace/circleci-orb/packed/orb.yml
+          orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN
           validate: true
           checkout: false
@@ -148,7 +148,7 @@ workflows:
           context: orb-publishing
           requires: [pack-integration_dev]
           orb-name: orb-update-alpha
-          orb-location: circleci-orb/packed/orb.yml
+          orb-location: workspace/circleci-orb/packed/orb.yml
           attach-workspace: true
           test-steps:
             - checkout
