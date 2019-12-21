@@ -88,22 +88,28 @@ workflows:
   version: 2
   dev:
     jobs:
-      - test-go
+      - test-go:
+          filters: &dev_filter
+            branches:
+              ignore: master
       - docker/publish:
           name: build-docker-image-dev
+          filters: *dev_filter
           deploy: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       - docker/hadolint:
           name: hadolint-dev
+          filters: *dev_filter
           # https://github.com/hadolint/hadolint/wiki/DL3018
           ignore-rules: DL3018
       - pack-orb:
           name: pack-orb-dev
+          filters: *dev_filter
           docker_image_latest_tag: DOCKER_LATEST_TAG
           orb_latest_version: ORB_LATEST_TAG
       - orb-tools/publish-dev:
           name: publish-orb-dev
-          context: circleci
+          context: orb-publishing
           requires:
             - pack-orb-dev
           orb-name: sawadashota/orb-update
@@ -130,6 +136,7 @@ workflows:
   release:
     jobs:
       - release-binary:
+          context: goreleaser
           filters: &release_filter
             tags:
               only: /.*/
@@ -151,7 +158,7 @@ workflows:
       - orb-tools/publish:
           name: publish-orb
           filters: *release_filter
-          context: circleci
+          context: orb-publishing
           requires:
             - publish-docker-image
             - pack-relase-orb
@@ -168,7 +175,6 @@ workflows:
       - orb-update/orb-update:
           context: orb-update
           name: daily-orb-update
-          repository: sawadashota/orb-update
     triggers:
       - schedule:
           cron: "0 10 * * *"  # minute hour day month week (UTC)
