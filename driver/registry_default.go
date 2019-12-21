@@ -14,6 +14,9 @@ import (
 	"github.com/sawadashota/orb-update/internal/pullrequest"
 )
 
+// Logger  of default
+var Logger io.Writer = os.Stdout
+
 // DefaultRegistry .
 type DefaultRegistry struct {
 	l    io.Writer
@@ -33,7 +36,7 @@ var _ Registry = new(DefaultRegistry)
 // NewDefaultRegistry .
 func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr := &DefaultRegistry{
-		l:  os.Stdout,
+		l:  Logger,
 		c:  c,
 		cl: orb.NewDefaultClient(),
 	}
