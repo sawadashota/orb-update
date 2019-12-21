@@ -19,12 +19,15 @@ executors:
   circleci-cli:
     docker:
       - image: circleci/circleci-cli:latest
+
 commands:
   close-test-pr:
+    description: Close and delete branches created in tests
     steps:
       - add_ssh_keys:
           fingerprints:
             - "53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77"
+      - run: git fetch
       - run:
           name: Close test PR
           command: |
@@ -108,7 +111,7 @@ jobs:
 
 dev_filters: &dev_filters
   branches:
-    ignore: /^orb-update\/circleci\/test/\config\.yml/
+    ignore: /^orb-update\/circleci\/test\/.*/
 
 release_filters: &release_filters
   tags:
