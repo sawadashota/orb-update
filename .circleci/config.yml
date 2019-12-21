@@ -106,7 +106,7 @@ workflows:
     jobs:
       - test-go
       - docker/publish:
-          name: build-docker-image-dev
+          name: publish-docker-image-dev
           deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: dev-${CIRCLE_SHA1}
@@ -137,7 +137,7 @@ workflows:
       - orb-tools/trigger-integration-tests-workflow:
           name: trigger-integration-workflow-dev
           context: orb-publishing
-          requires: [publish-orb-dev]
+          requires: [publish-orb-dev, publish-docker-image-dev]
 
   integration_dev:
     when: << pipeline.parameters.run-integration-tests >>
