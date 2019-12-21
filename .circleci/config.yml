@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   orb-update: sawadashota/orb-update@volatile
+  orb-update-alpha: sawadashota/orb-update@dev:alpha
   docker: circleci/docker@0.5.20
   orb-tools: circleci/orb-tools@9.0.0
   envsubst: sawadashota/envsubst@1.1.0
@@ -84,6 +85,57 @@ jobs:
           path: circleci-orb/packed/orb.yml
           destination: orb.yml
 
+  clean_up_tags:
+    parameters:
+      cleanup-tags-pattern:
+        default: integration*
+        description: >
+          Before proceeding with pushing a tag to trigger an integration testing
+          workflow, optionally clean up all older tags that meet a given `git tag
+          -l` wildcard pattern. Defaults to a wildcard pattern including any tags
+          starting with the string `integration`. (Default is intended for use when
+          `tag` parameter is set to `master`.)
+        type: string
+      ssh-fingerprints:
+        default: ''
+        description: >
+          Fingerprints for SSH deploy key (add the public key as a read/write key on
+          GitHub; add the private key in CircleCI via SSH Permissions, with
+          github.com as Hostname). Used to push a git tag back to the project's
+          repository.
+        type: string
+    docker:
+      - image: cibuilds/base
+    steps:
+      - checkout
+      - when:
+          condition: <<parameters.ssh-fingerprints>>
+          steps:
+            - add_ssh_keys:
+                fingerprints:
+                  - <<parameters.ssh-fingerprints>>
+      - run:
+          name: cleanup old remote tags
+          command: |
+            # delete local tags
+            git tag -d $(git tag -l "<<parameters.cleanup-tags-pattern>>")
+            # fetch remote tags
+            git fetch
+            # delete remote tag
+            git push origin --delete $(git tag -l git tag -l "<<parameters.cleanup-tags-pattern>>")
+
+integration_dev_filters: &integration_dev_filters
+  branches:
+    ignore: /.*/
+  tags:
+    only: /integration-.*/
+
+release_filters: &release_filters
+  tags:
+    only: /.*/
+  branches:
+    ignore: /.*/
+
 workflows:
   version: 2
   dev:
@@ -104,8 +156,7 @@ workflows:
       - orb-tools/publish-dev:
           name: publish-orb-dev
           context: orb-publishing
-          requires:
-            - pack-orb-dev
+          requires: [pack-orb-dev]
           orb-name: sawadashota/orb-update
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN
@@ -113,6 +164,42 @@ workflows:
           checkout: false
           attach-workspace: true
           workspace-root: .
+      # Push `integration` tag to VCS and kick `integration_dev` workflow
+      # because it's impossible to publish and use the orb in a same workflow.
+      # https://circleci.com/orbs/registry/orb/circleci/orb-tools?version=8.27.5#jobs-trigger-integration-workflow
+      - orb-tools/trigger-integration-workflow:
+          name: trigger-integration-workflow-dev
+          context: orb-publishing
+          requires: [publish-orb-dev]
+          use-git-diff: false
+          ssh-fingerprints: 53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77
+
+  integration_dev:
+    jobs:
+      - orb-tools/pack:
+          name: pack-integration_dev
+          filters: *integration_dev_filters
+      - orb-tools/test-in-builds:
+          name: test-in-builds-integration_dev
+          filters: *integration_dev_filters
+          context: orb-publishing
+          requires: [pack-integration_dev]
+          orb-name: orb-update-alpha
+          attach-workspace: true
+          test-steps:
+            - checkout
+            - setup_remote_docker
+            - run:
+                name: Setting Environmnet varible for orb-update
+                command: |
+                  echo "export BASE_BRANCH=${CIRCLE_BRANCH}" >> $BASH_ENV
+                  source $BASH_ENV
+            - orb-update-alpha/orb-update:
+                config: .circleci/test/.orb-update.yml
+      - clean_up_tags:
+          filters: *integration_dev_filters
+          requires: [test-in-builds-integration_dev]
+          ssh-fingerprints: 53:6e:9e:8d:ce:8d:a1:55:63:ef:98:f0:38:38:fe:77
 
   master:
     jobs:
@@ -131,14 +218,10 @@ workflows:
     jobs:
       - release-binary:
           context: goreleaser
-          filters: &release_filter
-            tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+          filters: *release_filters
       - docker/publish:
           name: publish-docker-image
-          filters: *release_filter
+          filters: *release_filters
           deploy: true
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: ${CIRCLE_TAG}
@@ -146,16 +229,14 @@ workflows:
           docker-password: DOCKER_PASSWORD
       - pack-orb:
           name: pack-relase-orb
-          filters: *release_filter
+          filters: *release_filters
           docker_image_latest_tag: CIRCLE_TAG
           orb_latest_version: CIRCLE_TAG
       - orb-tools/publish:
           name: publish-orb
-          filters: *release_filter
+          filters: *release_filters
           context: orb-publishing
-          requires:
-            - publish-docker-image
-            - pack-relase-orb
+          requires: [publish-docker-image, pack-relase-orb]
           orb-ref: sawadashota/orb-update@${CIRCLE_TAG}
           orb-path: circleci-orb/packed/orb.yml
           publish-token-variable: CIRCLE_TOKEN

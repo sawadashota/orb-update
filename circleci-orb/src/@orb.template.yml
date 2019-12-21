@@ -65,12 +65,12 @@ jobs:
     steps:
       - checkout
       - docker/install-docker
-      - setup_remote_docker
       - orb-update:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           config: << parameters.config >>
           docker_image_version: << parameters.docker_image_version >>
+      - setup_remote_docker
 
 examples:
   update-every-night:
