@@ -27,7 +27,7 @@ func (h *Handler) UpdateAll() error {
 		cfs = append(cfs, cf)
 	}
 
-	diffs, err := orb.DetectUpdateFromMultipleFile(cfs)
+	diffs, err := orb.DetectUpdateSet(cfs)
 	if err != nil {
 		return err
 	}
