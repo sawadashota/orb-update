@@ -11,7 +11,7 @@ const (
 	ViperGitAuthorEmail = "git.author.email"
 
 	viperRepositoryName     = "repository.name"
-	viperFilePath           = "file_path"
+	viperTargetFiles        = "target_files"
 	viperPullRequest        = "github.pull_request"
 	viperGithubToken        = "github.token"
 	viperGithubUsername     = "github.username"
@@ -83,7 +83,7 @@ func (v *ViperProvider) RepositoryName() string {
 	return viper.GetString(viperRepositoryName)
 }
 
-// FilePath .
-func (v *ViperProvider) FilePath() string {
-	return viper.GetString(viperFilePath)
+// TargetFiles .
+func (v *ViperProvider) TargetFiles() []string {
+	return viper.GetStringSlice(viperTargetFiles)
 }

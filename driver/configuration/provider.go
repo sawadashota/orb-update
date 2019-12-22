@@ -14,5 +14,5 @@ type Provider interface {
 	FilesystemStrategy() string
 
 	RepositoryName() string
-	FilePath() string
+	TargetFiles() []string
 }
