@@ -4,5 +4,5 @@ orbs:
   orb-update: sawadashota/orb-update@0.1.8
   orb-update-alpha: sawadashota/orb-update@dev:alpha
   docker: circleci/docker@0.5.19
-  orb-tools: circleci/orb-tools@8.27.6
+  orb-tools: circleci/orb-tools@9.0.0
   envsubst: sawadashota/envsubst@volatile
