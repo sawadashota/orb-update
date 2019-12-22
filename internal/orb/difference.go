@@ -30,36 +30,47 @@ type ConfigFile interface {
 	Update(w io.Writer, diff *Difference) error
 }
 
-// DetectUpdateFromMultipleFile reads multi config file and differences set
-func DetectUpdateFromMultipleFile(cfs []ConfigFile) ([]*Difference, error) {
-	multiDiffs := make([]*Difference, 0)
+// DetectUpdateSet reads multi config file and differences set
+func DetectUpdateSet(cfs []ConfigFile) ([]*Difference, error) {
+	set := NewDifferenceSet()
 	for _, cf := range cfs {
 		diffs, err := DetectUpdate(cf)
 		if err != nil {
 			return nil, err
 		}
 
-		multiDiffs = append(multiDiffs, diffs...)
+		set.addMulti(diffs...)
 	}
 
-	multiDiffSet := make([]*Difference, 0)
-	for _, diff := range multiDiffs {
-		if !hasOrb(diff, multiDiffSet) {
-			multiDiffSet = append(multiDiffSet, diff)
-		}
-	}
-
-	return multiDiffSet, nil
+	return set.set, nil
 }
 
-func hasOrb(needle *Difference, haystack []*Difference) bool {
-	for _, d := range haystack {
-		if needle.Old.Namespace() == d.Old.Namespace() && needle.Old.Name() == d.Old.Name() {
-			return true
+// differenceSet is set of Difference
+// set should not be multiply
+type differenceSet struct {
+	set []*Difference
+}
+
+// NewDifferenceSet .
+func NewDifferenceSet() *differenceSet {
+	return &differenceSet{set: make([]*Difference, 0)}
+}
+
+// addMulti Differences
+func (ds *differenceSet) addMulti(diffs ...*Difference) {
+	for _, diff := range diffs {
+		ds.add(diff)
+	}
+}
+
+// add Differences
+func (ds *differenceSet) add(diff *Difference) {
+	for _, d := range ds.set {
+		if d.Old.IsSameOrb(diff.Old) {
+			return
 		}
 	}
-
-	return false
+	ds.set = append(ds.set, diff)
 }
 
 // DetectUpdate from CircleCI config file

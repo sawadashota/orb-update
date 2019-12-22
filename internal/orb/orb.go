@@ -77,3 +77,8 @@ func (o *Orb) Version() Version {
 func (o *Orb) String() string {
 	return fmt.Sprintf("%s/%s@%s", o.namespace, o.name, o.version)
 }
+
+// IsSameOrb or not
+func (o *Orb) IsSameOrb(compare *Orb) bool {
+	return o.Namespace() == compare.Namespace() && o.Name() == compare.Name()
+}
