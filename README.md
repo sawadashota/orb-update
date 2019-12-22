@@ -33,7 +33,7 @@ orbs:
 TBW
 
 * `GITHUB_USERNAME`: GitHub token's user
-* `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension)
+* `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo,user:email&description=CircleCI%20for%20orb-update)
 
 Installation
 ---

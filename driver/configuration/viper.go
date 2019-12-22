@@ -5,10 +5,13 @@ import (
 )
 
 const (
+	// ViperGitAuthorName can be set from outside when empty
+	ViperGitAuthorName = "git.author.name"
+	// ViperGitAuthorEmail can be set from outside when empty
+	ViperGitAuthorEmail = "git.author.email"
+
 	viperRepositoryName     = "repository.name"
 	viperFilePath           = "file_path"
-	viperGitAuthorName      = "git.author.name"
-	viperGitAuthorEmail     = "git.author.email"
 	viperPullRequest        = "github.pull_request"
 	viperGithubToken        = "github.token"
 	viperGithubUsername     = "github.username"
@@ -26,12 +29,12 @@ func NewViperProvider() *ViperProvider {
 
 // GitAuthorName .
 func (v *ViperProvider) GitAuthorName() string {
-	return viper.GetString(viperGitAuthorName)
+	return viper.GetString(ViperGitAuthorName)
 }
 
 // GitAuthorEmail .
 func (v *ViperProvider) GitAuthorEmail() string {
-	return viper.GetString(viperGitAuthorEmail)
+	return viper.GetString(ViperGitAuthorEmail)
 }
 
 // GitHubPullRequest .
