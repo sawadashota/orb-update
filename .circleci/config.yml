@@ -54,7 +54,7 @@ commands:
           name: Close test PR
           command: |
             git branch -r \
-              | grep origin/orb-update/circleci/test/config.yml \
+              | grep origin/orb-update-alpha/ \
               | sed -e "s/origin\///g" \
               | xargs -I{} git push --delete origin {}
 

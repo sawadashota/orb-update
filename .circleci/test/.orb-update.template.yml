@@ -7,6 +7,9 @@ repository:
   # name of this repository
   name: sawadashota/orb-update
 
+git:
+  branch_prefix: orb-update-alpha
+
 github:
   # Pull Request creation option
   # default is false

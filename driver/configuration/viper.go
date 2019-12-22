@@ -10,6 +10,9 @@ const (
 	// ViperGitAuthorEmail can be set from outside when empty
 	ViperGitAuthorEmail = "git.author.email"
 
+	viperGitBranchPrefix   = "git.branch_prefix"
+	defaultGitBranchPrefix = "orb-update"
+
 	viperRepositoryName     = "repository.name"
 	viperTargetFiles        = "target_files"
 	viperPullRequest        = "github.pull_request"
@@ -25,6 +28,16 @@ type ViperProvider struct{}
 // NewViperProvider .
 func NewViperProvider() *ViperProvider {
 	return new(ViperProvider)
+}
+
+// GitBranchPrefix .
+func (v *ViperProvider) GitBranchPrefix() string {
+	prefix := viper.GetString(viperGitBranchPrefix)
+	if prefix == "" {
+		return defaultGitBranchPrefix
+	}
+
+	return prefix
 }
 
 // GitAuthorName .
@@ -75,7 +88,7 @@ func (v *ViperProvider) FilesystemStrategy() string {
 		return OsFileSystemStrategy
 	}
 
-	return InMemoryFilesystemStrategy
+	return strategy
 }
 
 // RepositoryName .

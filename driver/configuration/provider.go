@@ -2,6 +2,7 @@ package configuration
 
 // Provider of configuration
 type Provider interface {
+	GitBranchPrefix() string
 	GitAuthorName() string
 	GitAuthorEmail() string
 
