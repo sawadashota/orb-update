@@ -16,12 +16,14 @@ orbs:
 executors:
   default:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/base:stable
 commands:
   orb-update:
     description: >
       Execute orb-update command via docker command.
       Update each Orb version and create Pull Request on GitHub.
+      This command must be executed in docker.
+      Because CircleCI's read only SSH key in turn overrides GITHUB_TOKEN when `git push`
     parameters: &parameters
       github_username:
         description: Username of GitHub Token's owner
