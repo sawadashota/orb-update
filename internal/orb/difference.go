@@ -1,6 +1,8 @@
 package orb
 
-import "io"
+import (
+	"io"
+)
 
 // Difference of version between new and old
 type Difference struct {
@@ -42,7 +44,7 @@ func DetectUpdateFromMultipleFile(cfs []ConfigFile) ([]*Difference, error) {
 
 	multiDiffSet := make([]*Difference, 0)
 	for _, diff := range multiDiffs {
-		if !hasOrb(diff, multiDiffs) {
+		if !hasOrb(diff, multiDiffSet) {
 			multiDiffSet = append(multiDiffSet, diff)
 		}
 	}
