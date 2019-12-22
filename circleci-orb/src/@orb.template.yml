@@ -17,7 +17,44 @@ executors:
   default:
     docker:
       - image: cimg/base:stable
+
 commands:
+  default-config:
+    description: Generate default configuration if not exists
+    parameters:
+      config:
+        description: >
+          Path of configuration for orb-update
+          This option is for self testing. So please put config file at `.orb-update.yml`
+        type: string
+        default: .orb-update.yml
+    steps:
+      - run:
+          name: Generate default configuration if not exists
+          command: |
+            if [ -e << parameters.config >> ]; then
+              echo "detect configuration file"
+            else
+              echo "generate default configuration file"
+              cat \<< EOS > << parameters.config >>
+            file_path: .circleci/config.yml
+
+            repository:
+              name: ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+
+            github:
+              pull_request: true
+
+            base_branch: ${CIRCLE_BRANCH}
+
+            filesystem:
+              strategy: memory
+            EOS
+            fi
+
+            echo "cat << parameters.config >>"
+            cat << parameters.config >>
+
   orb-update:
     description: >
       Execute orb-update command via docker command.
@@ -68,6 +105,8 @@ jobs:
     steps:
       - checkout
       - docker/install-docker
+      - default-config:
+          config: << parameters.config >>
       - orb-update:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
@@ -86,7 +125,9 @@ examples:
       workflows:
         orb-update:
           jobs:
-            - orb-update/orb-update
+            - orb-update/orb-update:
+                github_username: GITHUB_USERNAME
+                github_token: GITHUB_TOKEN
           triggers:
             - schedule:
                 cron: "0 19 * * *"
