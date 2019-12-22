@@ -22,17 +22,19 @@ func init() {
 
 // ConfigFile of CircleCI
 type ConfigFile struct {
+	path  string
 	bytes []byte
 }
 
 // New .
-func New(r io.Reader) (*ConfigFile, error) {
+func New(r io.Reader, path string) (*ConfigFile, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, errors.Errorf(`failed to read config file because "%s"`, err)
 	}
 
 	return &ConfigFile{
+		path:  path,
 		bytes: b,
 	}, nil
 }
@@ -61,6 +63,11 @@ func (cf *ConfigFile) Parse() ([]*orb.Orb, error) {
 	}
 
 	return orbs, nil
+}
+
+// Path .
+func (cf *ConfigFile) Path() string {
+	return cf.path
 }
 
 // Update writes updated orb version

@@ -24,7 +24,7 @@ type Git interface {
 	BaseBranch() string
 	Switch(branch string, create bool) error
 	SwitchBack() error
-	Commit(message string, path string) (CommitHash, error)
+	Commit(message string, path []string) (CommitHash, error)
 	Push(ctx context.Context, branch string) error
 }
 
@@ -143,14 +143,16 @@ func (d *DefaultGitClient) SwitchBack() error {
 }
 
 // Commit .
-func (d *DefaultGitClient) Commit(message string, path string) (CommitHash, error) {
+func (d *DefaultGitClient) Commit(message string, path []string) (CommitHash, error) {
 	w, err := d.repo.Worktree()
 	if err != nil {
 		return "", errors.Errorf(`failed to retrieve git work tree because "%s"`, err)
 	}
 
-	if _, err := w.Add(path); err != nil {
-		return "", err
+	for _, p := range path {
+		if _, err := w.Add(p); err != nil {
+			return "", err
+		}
 	}
 
 	h, err := w.Commit(message, &git.CommitOptions{

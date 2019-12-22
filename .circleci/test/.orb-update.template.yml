@@ -1,10 +1,14 @@
 # target config file path
 # default is `.circleci/config.yml`
-file_path: .circleci/test/config.yml
+target_files:
+  - .circleci/test/config.yml
 
 repository:
   # name of this repository
   name: sawadashota/orb-update
+
+git:
+  branch_prefix: orb-update-alpha
 
 github:
   # Pull Request creation option

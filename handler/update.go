@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sawadashota/orb-update/internal/configfile"
 	"github.com/sawadashota/orb-update/internal/orb"
@@ -12,18 +11,23 @@ import (
 
 // UpdateAll orbs
 func (h *Handler) UpdateAll() error {
-	reader, err := h.r.Filesystem().Reader(h.c.FilePath())
-	if err != nil {
-		return err
+	cfs := make([]orb.ConfigFile, 0, len(h.c.TargetFiles()))
+	for _, target := range h.c.TargetFiles() {
+		reader, err := h.r.Filesystem().Reader(target)
+		if err != nil {
+			return err
+		}
+
+		cf, err := configfile.New(reader, target)
+		if err != nil {
+			return err
+		}
+		reader.Close()
+
+		cfs = append(cfs, cf)
 	}
 
-	cf, err := configfile.New(reader)
-	if err != nil {
-		return err
-	}
-	reader.Close()
-
-	diffs, err := orb.DetectUpdate(cf)
+	diffs, err := orb.DetectUpdateFromMultipleFile(cfs)
 	if err != nil {
 		return err
 	}
@@ -33,7 +37,7 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	for _, diff := range diffs {
-		if err := h.Update(cf, diff); err != nil {
+		if err := h.Update(cfs, diff); err != nil {
 			return err
 		}
 	}
@@ -42,11 +46,11 @@ func (h *Handler) UpdateAll() error {
 }
 
 // Update an orb
-func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error {
+func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 	ctx := context.Background()
 
 	if h.doesCreatePullRequest {
-		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, branchForPR(h.c.FilePath(), diff))
+		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(diff))
 		if err != nil {
 			return err
 		}
@@ -56,7 +60,7 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 			return nil
 		}
 
-		if err := h.r.Git().Switch(branchForPR(h.c.FilePath(), diff), true); err != nil {
+		if err := h.r.Git().Switch(h.branchForPR(diff), true); err != nil {
 			return err
 		}
 		defer func() {
@@ -75,39 +79,40 @@ func (h *Handler) Update(cf *configfile.ConfigFile, diff *orb.Difference) error 
 		diff.New.Version(),
 	)
 
-	// overwrite the configuration file
-	writer, err := h.r.Filesystem().OverWriter(h.c.FilePath())
-	if err != nil {
-		return err
-	}
+	for _, cf := range cfs {
+		// overwrite the configuration file
+		writer, err := h.r.Filesystem().OverWriter(cf.Path())
+		if err != nil {
+			return err
+		}
 
-	if err := cf.Update(writer, diff); err != nil {
-		return err
+		if err := cf.Update(writer, diff); err != nil {
+			return err
+		}
+		writer.Close()
 	}
-	writer.Close()
 
 	if !h.doesCreatePullRequest {
 		return nil
 	}
 
-	if _, err := h.r.Git().Commit(commitMessage(diff), h.c.FilePath()); err != nil {
+	if _, err := h.r.Git().Commit(commitMessage(diff), h.c.TargetFiles()); err != nil {
 		return err
 	}
 
-	if err := h.r.Git().Push(ctx, branchForPR(h.c.FilePath(), diff)); err != nil {
+	if err := h.r.Git().Push(ctx, h.branchForPR(diff)); err != nil {
 		return err
 	}
 
-	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), branchForPR(h.c.FilePath(), diff)); err != nil {
+	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), h.branchForPR(diff)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func branchForPR(filePath string, diff *orb.Difference) string {
-	branch := fmt.Sprintf("orb-update/%s/%s/%s-%s", filePath, diff.New.Namespace(), diff.New.Name(), diff.New.Version())
-	return strings.ReplaceAll(branch, "/.", "/")
+func (h *Handler) branchForPR(diff *orb.Difference) string {
+	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.New.Namespace(), diff.New.Name(), diff.New.Version())
 }
 
 func commitMessage(diff *orb.Difference) string {

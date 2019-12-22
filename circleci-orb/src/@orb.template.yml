@@ -12,7 +12,7 @@ description: |
   https://github.com/sawadashota/orb-update
 
 orbs:
-  docker: circleci/docker@0.5.19
+  docker: circleci/docker@0.5.20
 executors:
   default:
     docker:
@@ -37,7 +37,8 @@ commands:
             else
               echo "generate default configuration file"
               cat \<< EOS > << parameters.config >>
-            file_path: .circleci/config.yml
+            target_files:
+              - .circleci/config.yml
 
             repository:
               name: ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
