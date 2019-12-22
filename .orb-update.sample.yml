@@ -9,6 +9,7 @@ repository:
 git:
   # author of commit
   # require when Pull Request Creation
+  # if empty, fetch from GitHub
   author:
     name: sawadashota
     email: example@example.com

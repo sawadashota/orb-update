@@ -6,6 +6,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/viper"
+
+	"github.com/sawadashota/orb-update/internal/vcsuser"
+
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
 	"github.com/sawadashota/orb-update/internal/filesystem"
@@ -41,6 +45,12 @@ func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 		cl: orb.NewDefaultClient(),
 	}
 
+	if c.GitAuthorEmail() == "" || c.GitAuthorName() == "" {
+		if err := dr.setGitAuthorFromVCS(context.Background()); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := dr.setupRepository(); err != nil {
 		return nil, err
 	}
@@ -53,6 +63,22 @@ func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 // Logger .
 func (d *DefaultRegistry) Logger() io.Writer {
 	return d.l
+}
+
+// setGitAuthorFromVCS when git author is not configured
+func (d *DefaultRegistry) setGitAuthorFromVCS(ctx context.Context) error {
+	cl := vcsuser.NewGithubClient(ctx, d.c)
+	user, err := cl.Fetch(ctx)
+	if err != nil {
+		return err
+	}
+
+	viper.Set(configuration.ViperGitAuthorName, user.Name())
+	viper.Set(configuration.ViperGitAuthorEmail, user.Email())
+
+	_, _ = fmt.Fprintf(d.l, "git author has set GitHub name(%s) and email(%s)", user.Name(), user.Email())
+
+	return nil
 }
 
 func (d *DefaultRegistry) setupRepository() error {
