@@ -16,11 +16,33 @@ parameters:
     default: "dev:alpha"
 
 executors:
+  golang:
+    docker:
+      - image: circleci/golang:1.13
   circleci-cli:
     docker:
       - image: circleci/circleci-cli:latest
 
 commands:
+  download-go-mod:
+    steps:
+      - restore_cache:
+          name: Restore go modules cache
+          keys:
+            - mod-{{ checksum "go.sum" }}
+      - run: go mod download
+      - save_cache:
+          name: Save go modules cache
+          key: mod-{{ checksum "go.sum" }}
+          paths:
+            - /go/pkg/mod/cache
+      - run: go mod verify
+
+  build-go:
+    steps:
+      - download-go-mod
+      - run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build
+
   close-test-pr:
     description: Close and delete branches created in tests
     steps:
@@ -38,21 +60,10 @@ commands:
 
 jobs:
   test-go:
-    docker:
-      - image: circleci/golang:1.13
+    executor: golang
     steps:
       - checkout
-      - restore_cache:
-          name: Restore go modules cache
-          keys:
-            - mod-{{ checksum "go.sum" }}
-      - run: go mod download
-      - save_cache:
-          name: Save go modules cache
-          key: mod-{{ checksum "go.sum" }}
-          paths:
-            - /go/pkg/mod/cache
-      - run: go mod verify
+      - download-go-mod
       - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       - run: go tool cover -html coverage.txt -o coverage.html
       - run:
@@ -67,8 +78,7 @@ jobs:
       - image: goreleaser/goreleaser:v0.123
     steps:
       - checkout
-      - run: go mod download
-      - run: go mod verify
+      - download-go-mod
       - run: goreleaser
 
   pack-orb:
@@ -134,6 +144,9 @@ workflows:
           tag: dev-${CIRCLE_SHA1}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+          executor: golang
+          use-remote-docker: true
+          before_build: [build-go]
       - docker/hadolint:
           name: hadolint-dev
           filters: *dev_filters
@@ -199,6 +212,9 @@ workflows:
           tag: latest
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+          executor: golang
+          use-remote-docker: true
+          before_build: [build-go]
 
   release:
     jobs:
@@ -213,6 +229,9 @@ workflows:
           tag: ${CIRCLE_TAG}
           docker-username: DOCKER_LOGIN
           docker-password: DOCKER_PASSWORD
+          executor: golang
+          use-remote-docker: true
+          before_build: [build-go]
       - pack-orb:
           name: pack-relase-orb
           filters: *release_filters
