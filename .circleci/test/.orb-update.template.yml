@@ -6,13 +6,6 @@ repository:
   # name of this repository
   name: sawadashota/orb-update
 
-git:
-  # author of commit
-  # require when Pull Request Creation
-  author:
-    name: sawadashota
-    email: xiootas@gmail.com
-
 github:
   # Pull Request creation option
   # default is false

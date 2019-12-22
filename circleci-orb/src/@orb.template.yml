@@ -32,7 +32,7 @@ commands:
       github_token:
         description: |
           GitHub Token to read/create Pull Request
-          https://github.com/settings/tokens/new?scopes=repo&description=Octotree%20browser%20extension
+          https://github.com/settings/tokens/new?scopes=repo,user:email&description=CircleCI%20for%20orb-update
         type: env_var_name
         default: GITHUB_TOKEN
       config:
