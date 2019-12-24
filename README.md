@@ -95,6 +95,8 @@ https://circleci.com/orbs/registry/orb/sawadashota/orb-update
 Configuration
 ---
 
+Define configuration `.orb-update.yml` or CLI argument `--config`.  
+
 ```yaml
 # target config file path
 # default is `.circleci/config.yml`
