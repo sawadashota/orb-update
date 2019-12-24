@@ -136,6 +136,9 @@ filesystem:
   # default is `os` for easy to use in local
   # but in CI, `memory` is recommended
   strategy: memory
+
+ignore:
+  - circleci/orb-tools
 ```
 
 Using Docker Image
