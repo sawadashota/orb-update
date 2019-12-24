@@ -2,6 +2,7 @@
 # default is `.circleci/config.yml`
 target_files:
   - .circleci/test/config.yml
+  - .circleci/test/config2.yml
 
 repository:
   # name of this repository
