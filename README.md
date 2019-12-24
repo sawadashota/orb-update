@@ -30,7 +30,23 @@ orbs:
 
 ### Pull Request Creation Option
 
-TBW
+orb-update can update orb and create pull request.
+
+Here is minimum sample.
+
+```yaml
+version: 2.1
+
+orbs:
+  orb-update: sawadashota/orb-update@volatile
+
+workflows:
+  orb-update:
+    jobs:
+      - orb-update/orb-update
+```
+
+And following environment variables are required.
 
 * `GITHUB_USERNAME`: GitHub token's user
 * `GITHUB_TOKEN`: [GitHub access token](https://github.com/settings/tokens/new?scopes=repo,user:email&description=CircleCI%20for%20orb-update)
@@ -75,6 +91,50 @@ workflows:
 ```
 
 https://circleci.com/orbs/registry/orb/sawadashota/orb-update
+
+Configuration
+---
+
+```yaml
+# target config file path
+# default is `.circleci/config.yml`
+target_files:
+  - .circleci/config.yml
+
+repository:
+  # name of this repository
+  name: sawadashota/orb-update
+
+git:
+  # author of commit
+  # require when Pull Request Creation
+  # if empty, fetch from GitHub
+  author:
+    name: sawadashota
+    email: example@example.com
+
+github:
+  # Pull Request creation option
+  # default is false
+  pull_request: true
+
+  # these should be configured by environment variable because of credentials
+  #
+  # `GITHUB_USERNAME`
+  #username: sawadashota
+  # `GITHUB_TOKEN`
+  #token: github_token
+
+# base branch
+# default is `master`
+base_branch: master
+
+filesystem:
+  # filesystem strategy supports `os` and `memory`
+  # default is `os` for easy to use in local
+  # but in CI, `memory` is recommended
+  strategy: memory
+```
 
 Using Docker Image
 ---
