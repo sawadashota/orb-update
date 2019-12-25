@@ -26,7 +26,7 @@ type ConfigFile struct {
 	bytes []byte
 }
 
-// New .
+// After .
 func New(r io.Reader, path string) (*ConfigFile, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -43,8 +43,8 @@ func (cf *ConfigFile) reader() io.Reader {
 	return bytes.NewReader(cf.bytes)
 }
 
-// Parse configuration file
-func (cf *ConfigFile) Parse() ([]*orb.Orb, error) {
+// ExtractOrbs configuration file
+func (cf *ConfigFile) ExtractOrbs() ([]*orb.Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
@@ -71,14 +71,14 @@ func (cf *ConfigFile) Path() string {
 }
 
 // Update writes updated orb version
-func (cf *ConfigFile) Update(w io.Writer, diff *orb.Difference) error {
+func (cf *ConfigFile) Update(w io.Writer, update *Update) error {
 	var b bytes.Buffer
 
 	scan := bufio.NewScanner(cf.reader())
 	for scan.Scan() {
 		func() {
-			if strings.Contains(scan.Text(), diff.Old.String()) {
-				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+diff.New.Version().String()))
+			if strings.Contains(scan.Text(), update.Before.String()) {
+				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+update.After.Version().String()))
 				b.WriteString("\n")
 				return
 			}

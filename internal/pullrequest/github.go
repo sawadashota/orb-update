@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sawadashota/orb-update/internal/configfile"
+
 	"github.com/pkg/errors"
 
 	"github.com/google/go-github/v28/github"
-	"github.com/sawadashota/orb-update/internal/orb"
 	"golang.org/x/oauth2"
 )
 
@@ -40,10 +41,10 @@ func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) Crea
 }
 
 // Create Pull Request on GitHub
-func (g *GitHubPullRequest) Create(ctx context.Context, diff *orb.Difference, message, baseBranch string) error {
-	o := diff.New
+func (g *GitHubPullRequest) Create(ctx context.Context, update *configfile.Update, message, baseBranch string) error {
+	o := update.After
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
-		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), diff.Old.Version(), o.Version())),
+		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), update.Before.Version(), o.Version())),
 		Body:  &message,
 		Base:  github.String(g.c.BaseBranch()),
 		Head:  github.String(baseBranch),

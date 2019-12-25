@@ -22,7 +22,7 @@ func containOrb(t *testing.T, needle *orb.Orb, haystack []*orb.Orb) bool {
 	return false
 }
 
-func TestConfigFile_Parse(t *testing.T) {
+func TestConfigFile_ExtractOrbs(t *testing.T) {
 	cases := map[string]struct {
 		configPath string
 		want       []*orb.Orb
@@ -60,9 +60,9 @@ func TestConfigFile_Parse(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := cf.Parse()
+			got, err := cf.ExtractOrbs()
 			if (err != nil) != c.wantErr {
-				t.Errorf("Parse() error = %v, wantErr %v", err, c.wantErr)
+				t.Errorf("ExtractOrbs() error = %v, wantErr %v", err, c.wantErr)
 				return
 			}
 
@@ -71,12 +71,12 @@ func TestConfigFile_Parse(t *testing.T) {
 			}
 
 			if len(got) != len(c.want) {
-				t.Errorf("Parse() got = %v, want %v", got, c.want)
+				t.Errorf("ExtractOrbs() got = %v, want %v", got, c.want)
 			}
 
 			for _, gotOrb := range got {
 				if !containOrb(t, gotOrb, c.want) {
-					t.Errorf("Parse() got = %v, want %v", got, c.want)
+					t.Errorf("ExtractOrbs() got = %v, want %v", got, c.want)
 				}
 			}
 		})
@@ -85,7 +85,7 @@ func TestConfigFile_Parse(t *testing.T) {
 
 func TestConfigFile_Update(t *testing.T) {
 	type args struct {
-		diff *orb.Difference
+		update *configfile.Update
 	}
 	cases := map[string]struct {
 		configPath string
@@ -96,7 +96,7 @@ func TestConfigFile_Update(t *testing.T) {
 		"correct format": {
 			configPath: "./testdata/correct-format.yml",
 			args: args{
-				diff: orb.NewDifference(
+				update: configfile.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -117,7 +117,7 @@ job:
 		"no orb": {
 			configPath: "./testdata/no-orb.yml",
 			args: args{
-				diff: orb.NewDifference(
+				update: configfile.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -134,7 +134,7 @@ job:
 		"incorrect format": {
 			configPath: "./testdata/incorrect-format.yml",
 			args: args{
-				diff: orb.NewDifference(
+				update: configfile.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -167,7 +167,7 @@ job:
 			}
 
 			var result bytes.Buffer
-			err = cf.Update(&result, c.args.diff)
+			err = cf.Update(&result, c.args.update)
 			if (err != nil) != c.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, c.wantErr)
 				return

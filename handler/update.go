@@ -6,12 +6,11 @@ import (
 	"os"
 
 	"github.com/sawadashota/orb-update/internal/configfile"
-	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // UpdateAll orbs
 func (h *Handler) UpdateAll() error {
-	cfs := make([]orb.ConfigFile, 0, len(h.c.TargetFiles()))
+	cfs := make([]*configfile.ConfigFile, 0, len(h.c.TargetFiles()))
 	for _, target := range h.c.TargetFiles() {
 		reader, err := h.r.Filesystem().Reader(target)
 		if err != nil {
@@ -27,17 +26,17 @@ func (h *Handler) UpdateAll() error {
 		cfs = append(cfs, cf)
 	}
 
-	diffs, err := orb.DetectUpdateSet(cfs)
+	updates, err := configfile.DetectUpdateSet(cfs)
 	if err != nil {
 		return err
 	}
 
-	if len(diffs) == 0 {
+	if len(updates) == 0 {
 		return nil
 	}
 
-	for _, diff := range diffs {
-		if err := h.Update(cfs, diff); err != nil {
+	for _, update := range updates {
+		if err := h.Update(cfs, update); err != nil {
 			return err
 		}
 	}
@@ -46,7 +45,7 @@ func (h *Handler) UpdateAll() error {
 }
 
 // Update an orb
-func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
+func (h *Handler) Update(cfs []*configfile.ConfigFile, diff *configfile.Update) error {
 	ctx := context.Background()
 
 	if h.doesCreatePullRequest {
@@ -56,7 +55,7 @@ func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 		}
 
 		if alreadyCreated {
-			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", diff.New.String())
+			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", diff.After.String())
 			return nil
 		}
 
@@ -73,10 +72,10 @@ func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 	_, _ = fmt.Fprintf(
 		h.r.Logger(),
 		"Updating %s/%s (%s => %s)\n",
-		diff.New.Namespace(),
-		diff.New.Name(),
-		diff.Old.Version(),
-		diff.New.Version(),
+		diff.After.Namespace(),
+		diff.After.Name(),
+		diff.Before.Version(),
+		diff.After.Version(),
 	)
 
 	for _, cf := range cfs {
@@ -111,12 +110,12 @@ func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 	return nil
 }
 
-func (h *Handler) branchForPR(diff *orb.Difference) string {
-	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.New.Namespace(), diff.New.Name(), diff.New.Version())
+func (h *Handler) branchForPR(diff *configfile.Update) string {
+	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.After.Namespace(), diff.After.Name(), diff.After.Version())
 }
 
-func commitMessage(diff *orb.Difference) string {
-	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
-	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Old.Namespace(), diff.Old.Name())
+func commitMessage(diff *configfile.Update) string {
+	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Before.Namespace(), diff.Before.Name(), diff.Before.Version(), diff.After.Version())
+	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Before.Namespace(), diff.Before.Name())
 	return message
 }
