@@ -70,21 +70,26 @@ func (gc *GithubClient) Fetch(ctx context.Context) (VCSUser, error) {
 		return u, nil
 	}
 
+	email, err := gc.getPrimaryEmail(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	u.email = email
+	return u, nil
+}
+
+func (gc *GithubClient) getPrimaryEmail(ctx context.Context) (string, error) {
 	emails, _, err := gc.client.Users.ListEmails(ctx, &github.ListOptions{})
 	if err != nil {
-		return nil, errors.Errorf(`failed to fetch GitHub user's email because "%s"`, err)
+		return "", errors.Errorf(`failed to fetch GitHub user's email because "%s"`, err)
 	}
 
 	for _, email := range emails {
 		if email.GetPrimary() {
-			u.email = email.GetEmail()
-			break
+			return email.GetEmail(), nil
 		}
 	}
 
-	if u.email == "" {
-		return nil, errors.New("GitHub primary email is not found")
-	}
-
-	return u, nil
+	return "", errors.New("GitHub primary email is not found")
 }
