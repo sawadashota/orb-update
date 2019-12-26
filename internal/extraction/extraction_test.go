@@ -1,11 +1,11 @@
-package configfile_test
+package extraction_test
 
 import (
 	"bytes"
 	"os"
 	"testing"
 
-	"github.com/sawadashota/orb-update/internal/configfile"
+	"github.com/sawadashota/orb-update/internal/extraction"
 
 	"github.com/sawadashota/orb-update/internal/orb"
 )
@@ -55,14 +55,14 @@ func TestConfigFile_ExtractOrbs(t *testing.T) {
 			}
 			defer file.Close()
 
-			cf, err := configfile.New(file, "")
+			cf, err := extraction.New(file)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got, err := cf.ExtractOrbs()
+			got, err := cf.Do()
 			if (err != nil) != c.wantErr {
-				t.Errorf("ExtractOrbs() error = %v, wantErr %v", err, c.wantErr)
+				t.Errorf("Do() error = %v, wantErr %v", err, c.wantErr)
 				return
 			}
 
@@ -71,12 +71,12 @@ func TestConfigFile_ExtractOrbs(t *testing.T) {
 			}
 
 			if len(got) != len(c.want) {
-				t.Errorf("ExtractOrbs() got = %v, want %v", got, c.want)
+				t.Errorf("Do() got = %v, want %v", got, c.want)
 			}
 
 			for _, gotOrb := range got {
 				if !containOrb(t, gotOrb, c.want) {
-					t.Errorf("ExtractOrbs() got = %v, want %v", got, c.want)
+					t.Errorf("Do() got = %v, want %v", got, c.want)
 				}
 			}
 		})
@@ -85,7 +85,7 @@ func TestConfigFile_ExtractOrbs(t *testing.T) {
 
 func TestConfigFile_Update(t *testing.T) {
 	type args struct {
-		update *configfile.Update
+		update *extraction.Update
 	}
 	cases := map[string]struct {
 		configPath string
@@ -96,7 +96,7 @@ func TestConfigFile_Update(t *testing.T) {
 		"correct format": {
 			configPath: "./testdata/correct-format.yml",
 			args: args{
-				update: configfile.NewUpdate(
+				update: extraction.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -117,7 +117,7 @@ job:
 		"no orb": {
 			configPath: "./testdata/no-orb.yml",
 			args: args{
-				update: configfile.NewUpdate(
+				update: extraction.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -134,7 +134,7 @@ job:
 		"incorrect format": {
 			configPath: "./testdata/incorrect-format.yml",
 			args: args{
-				update: configfile.NewUpdate(
+				update: extraction.NewUpdate(
 					orb.New("example", "example01", "3.4.1"),
 					orb.New("example", "example01", "3.4.2"),
 				),
@@ -161,7 +161,7 @@ job:
 			}
 			defer file.Close()
 
-			cf, err := configfile.New(file, "")
+			cf, err := extraction.New(file)
 			if err != nil {
 				t.Fatal(err)
 			}

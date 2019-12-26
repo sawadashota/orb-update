@@ -1,8 +1,16 @@
-package configfile
+package extraction
 
 import (
 	"github.com/sawadashota/orb-update/internal/orb"
 )
+
+//type UpdateDetection struct {
+//	r io.Reader
+//}
+//
+//func (ud *UpdateDetection) Do() ([]*Update, error) {
+//
+//}
 
 // Update of version between new and old
 type Update struct {
@@ -18,24 +26,9 @@ func NewUpdate(before, after *orb.Orb) *Update {
 	}
 }
 
-// hasUpdate or not
-func (u *Update) hasUpdate() bool {
+// validate or not
+func (u *Update) validate() bool {
 	return u.Before.Version() != u.After.Version()
-}
-
-// DetectUpdateSet reads multi config file and differences set
-func DetectUpdateSet(cfs []*ConfigFile) ([]*Update, error) {
-	set := NewUpdateSet()
-	for _, cf := range cfs {
-		diffs, err := cf.DetectUpdate()
-		if err != nil {
-			return nil, err
-		}
-
-		set.addMulti(diffs...)
-	}
-
-	return set.set, nil
 }
 
 // updateSet is set of Update
@@ -44,8 +37,8 @@ type updateSet struct {
 	set []*Update
 }
 
-// NewUpdateSet .
-func NewUpdateSet() *updateSet {
+// newUpdateSet .
+func newUpdateSet() *updateSet {
 	return &updateSet{set: make([]*Update, 0)}
 }
 
@@ -67,14 +60,14 @@ func (ds *updateSet) add(update *Update) {
 }
 
 // DetectUpdate from CircleCI config file
-func (cf *ConfigFile) DetectUpdate() ([]*Update, error) {
-	orbs, err := cf.ExtractOrbs()
+func (cf *Extraction) DetectUpdate() ([]*Update, error) {
+	orbs, err := cf.Do()
 	if err != nil {
 		return nil, err
 	}
 
 	cl := orb.NewDefaultClient()
-	updates := make([]*Update, 0, len(orbs))
+	updates := newUpdateSet()
 	for _, o := range orbs {
 		if !o.Version().IsSemantic() {
 			continue
@@ -85,15 +78,15 @@ func (cf *ConfigFile) DetectUpdate() ([]*Update, error) {
 			return nil, err
 		}
 
-		diff := NewUpdate(o, newVersion)
-		if !diff.hasUpdate() {
+		update := NewUpdate(o, newVersion)
+		if !update.validate() {
 			continue
 		}
 
 		if o.Version() != newVersion.Version() {
-			updates = append(updates, diff)
+			updates.add(update)
 		}
 	}
 
-	return updates, nil
+	return updates.set, nil
 }

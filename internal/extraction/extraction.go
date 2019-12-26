@@ -1,4 +1,4 @@
-package configfile
+package extraction
 
 import (
 	"bufio"
@@ -20,31 +20,29 @@ func init() {
 	orbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
-// ConfigFile of CircleCI
-type ConfigFile struct {
-	path  string
+// Extraction orb instance
+type Extraction struct {
 	bytes []byte
 }
 
-// After .
-func New(r io.Reader, path string) (*ConfigFile, error) {
+// New Extraction .
+func New(r io.Reader) (*Extraction, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, errors.Errorf(`failed to read config file because "%s"`, err)
 	}
 
-	return &ConfigFile{
-		path:  path,
+	return &Extraction{
 		bytes: b,
 	}, nil
 }
 
-func (cf *ConfigFile) reader() io.Reader {
+func (cf *Extraction) reader() io.Reader {
 	return bytes.NewReader(cf.bytes)
 }
 
-// ExtractOrbs configuration file
-func (cf *ConfigFile) ExtractOrbs() ([]*orb.Orb, error) {
+// Do extract orbs from configuration file
+func (cf *Extraction) Do() ([]*orb.Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
@@ -65,13 +63,8 @@ func (cf *ConfigFile) ExtractOrbs() ([]*orb.Orb, error) {
 	return orbs, nil
 }
 
-// Path .
-func (cf *ConfigFile) Path() string {
-	return cf.path
-}
-
 // Update writes updated orb version
-func (cf *ConfigFile) Update(w io.Writer, update *Update) error {
+func (cf *Extraction) Update(w io.Writer, update *Update) error {
 	var b bytes.Buffer
 
 	scan := bufio.NewScanner(cf.reader())
