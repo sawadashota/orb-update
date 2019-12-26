@@ -1,7 +1,6 @@
 package extraction_test
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -22,7 +21,7 @@ func containOrb(t *testing.T, needle *orb.Orb, haystack []*orb.Orb) bool {
 	return false
 }
 
-func TestConfigFile_ExtractOrbs(t *testing.T) {
+func TestExtraction_Orbs(t *testing.T) {
 	cases := map[string]struct {
 		configPath string
 		want       []*orb.Orb
@@ -60,9 +59,9 @@ func TestConfigFile_ExtractOrbs(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := cf.Do()
+			got, err := cf.Orbs()
 			if (err != nil) != c.wantErr {
-				t.Errorf("Do() error = %v, wantErr %v", err, c.wantErr)
+				t.Errorf("Orbs() error = %v, wantErr %v", err, c.wantErr)
 				return
 			}
 
@@ -71,110 +70,13 @@ func TestConfigFile_ExtractOrbs(t *testing.T) {
 			}
 
 			if len(got) != len(c.want) {
-				t.Errorf("Do() got = %v, want %v", got, c.want)
+				t.Errorf("Orbs() got = %v, want %v", got, c.want)
 			}
 
 			for _, gotOrb := range got {
 				if !containOrb(t, gotOrb, c.want) {
-					t.Errorf("Do() got = %v, want %v", got, c.want)
+					t.Errorf("Orbs() got = %v, want %v", got, c.want)
 				}
-			}
-		})
-	}
-}
-
-func TestConfigFile_Update(t *testing.T) {
-	type args struct {
-		update *extraction.Update
-	}
-	cases := map[string]struct {
-		configPath string
-		args       args
-		want       string
-		wantErr    bool
-	}{
-		"correct format": {
-			configPath: "./testdata/correct-format.yml",
-			args: args{
-				update: extraction.NewUpdate(
-					orb.New("example", "example01", "3.4.1"),
-					orb.New("example", "example01", "3.4.2"),
-				),
-			},
-			want: `orbs:
-  example01: example/example01@3.4.2
-  example02: example/example02@1.0.0
-
-job:
-  example:
-    docker:
-      - image: example
-    steps:
-      - run: echo "Hello World"
-`,
-			wantErr: false,
-		},
-		"no orb": {
-			configPath: "./testdata/no-orb.yml",
-			args: args{
-				update: extraction.NewUpdate(
-					orb.New("example", "example01", "3.4.1"),
-					orb.New("example", "example01", "3.4.2"),
-				),
-			},
-			want: `job:
-  example:
-    docker:
-      - image: example
-    steps:
-      - run: echo "Hello World"
-`,
-			wantErr: false,
-		},
-		"incorrect format": {
-			configPath: "./testdata/incorrect-format.yml",
-			args: args{
-				update: extraction.NewUpdate(
-					orb.New("example", "example01", "3.4.1"),
-					orb.New("example", "example01", "3.4.2"),
-				),
-			},
-			want: `orbs:
-  example01: example@3.4.1
-  example02: example
-
-job:
-  example:
-    docker:
-      - image: example
-    steps:
-      - run: echo "Hello World"
-`,
-			wantErr: false,
-		},
-	}
-	for name, c := range cases {
-		t.Run(name, func(t *testing.T) {
-			file, err := os.Open(c.configPath)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer file.Close()
-
-			cf, err := extraction.New(file)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			var result bytes.Buffer
-			err = cf.Update(&result, c.args.update)
-			if (err != nil) != c.wantErr {
-				t.Errorf("Update() error = %v, wantErr %v", err, c.wantErr)
-				return
-			}
-
-			if result.String() != c.want {
-				t.Errorf("Update() \n===got===\n%s\n===want===\n%s", result.String(), c.want)
 			}
 		})
 	}

@@ -1,12 +1,10 @@
 package extraction
 
 import (
-	"bufio"
 	"bytes"
 	"io"
 	"io/ioutil"
 	"regexp"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -14,10 +12,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var orbFormatRegex *regexp.Regexp
+var OrbFormatRegex *regexp.Regexp
 
 func init() {
-	orbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
+	OrbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
 // Extraction orb instance
@@ -37,16 +35,16 @@ func New(r io.Reader) (*Extraction, error) {
 	}, nil
 }
 
-func (cf *Extraction) reader() io.Reader {
-	return bytes.NewReader(cf.bytes)
+func (e *Extraction) Reader() io.Reader {
+	return bytes.NewReader(e.bytes)
 }
 
-// Do extract orbs from configuration file
-func (cf *Extraction) Do() ([]*orb.Orb, error) {
+// Orbs extract orbs from configuration file
+func (e *Extraction) Orbs() ([]*orb.Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
-	if err := yaml.NewDecoder(cf.reader()).Decode(&mapConfig); err != nil {
+	if err := yaml.NewDecoder(e.Reader()).Decode(&mapConfig); err != nil {
 		return nil, errors.Errorf(`failed to decode config file of orb-update because "%s"`, err)
 	}
 
@@ -61,25 +59,4 @@ func (cf *Extraction) Do() ([]*orb.Orb, error) {
 	}
 
 	return orbs, nil
-}
-
-// Update writes updated orb version
-func (cf *Extraction) Update(w io.Writer, update *Update) error {
-	var b bytes.Buffer
-
-	scan := bufio.NewScanner(cf.reader())
-	for scan.Scan() {
-		func() {
-			if strings.Contains(scan.Text(), update.Before.String()) {
-				b.WriteString(orbFormatRegex.ReplaceAllString(scan.Text(), "$1@"+update.After.Version().String()))
-				b.WriteString("\n")
-				return
-			}
-			b.Write(scan.Bytes())
-			b.WriteString("\n")
-		}()
-	}
-
-	_, err := io.Copy(w, &b)
-	return err
 }

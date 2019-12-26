@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -23,12 +25,12 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	reader := io.MultiReader(files...)
-	cf, err := extraction.New(reader)
+	extraction, err := extraction.New(reader)
 	if err != nil {
 		return err
 	}
 
-	updates, err := cf.DetectUpdate()
+	updates, err := extraction.Updates()
 	if err != nil {
 		return err
 	}
@@ -38,7 +40,7 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	for _, update := range updates {
-		if err := h.Update(cf, update); err != nil {
+		if err := h.Update(extraction, update); err != nil {
 			return err
 		}
 	}
@@ -60,21 +62,21 @@ func (h *Handler) filterOrbs(updates []*extraction.Update) []*extraction.Update 
 }
 
 // Update an orb
-func (h *Handler) Update(cf *extraction.Extraction, diff *extraction.Update) error {
+func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) error {
 	ctx := context.Background()
 
 	if h.doesCreatePullRequest {
-		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(diff))
+		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(update))
 		if err != nil {
 			return err
 		}
 
 		if alreadyCreated {
-			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", diff.After.String())
+			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", update.After.String())
 			return nil
 		}
 
-		if err := h.r.Git().Switch(h.branchForPR(diff), true); err != nil {
+		if err := h.r.Git().Switch(h.branchForPR(update), true); err != nil {
 			return err
 		}
 		defer func() {
@@ -87,10 +89,10 @@ func (h *Handler) Update(cf *extraction.Extraction, diff *extraction.Update) err
 	_, _ = fmt.Fprintf(
 		h.r.Logger(),
 		"Updating %s/%s (%s => %s)\n",
-		diff.After.Namespace(),
-		diff.After.Name(),
-		diff.Before.Version(),
-		diff.After.Version(),
+		update.After.Namespace(),
+		update.After.Name(),
+		update.Before.Version(),
+		update.After.Version(),
 	)
 
 	for _, filePath := range h.c.TargetFiles() {
@@ -99,7 +101,26 @@ func (h *Handler) Update(cf *extraction.Extraction, diff *extraction.Update) err
 			return err
 		}
 
-		if err := cf.Update(writer, diff); err != nil {
+		var b bytes.Buffer
+
+		scan := bufio.NewScanner(e.Reader())
+		for scan.Scan() {
+			func() {
+				if strings.Contains(scan.Text(), update.Before.String()) {
+					b.WriteString(
+						extraction.OrbFormatRegex.ReplaceAllString(scan.Text(),
+							"$1@"+update.After.Version().String()),
+					)
+					b.WriteString("\n")
+					return
+				}
+				b.Write(scan.Bytes())
+				b.WriteString("\n")
+			}()
+		}
+
+		_, err = io.Copy(writer, &b)
+		if err != nil {
 			return err
 		}
 		writer.Close()
@@ -109,15 +130,15 @@ func (h *Handler) Update(cf *extraction.Extraction, diff *extraction.Update) err
 		return nil
 	}
 
-	if _, err := h.r.Git().Commit(commitMessage(diff), h.c.TargetFiles()); err != nil {
+	if _, err := h.r.Git().Commit(commitMessage(update), h.c.TargetFiles()); err != nil {
 		return err
 	}
 
-	if err := h.r.Git().Push(ctx, h.branchForPR(diff)); err != nil {
+	if err := h.r.Git().Push(ctx, h.branchForPR(update)); err != nil {
 		return err
 	}
 
-	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), h.branchForPR(diff)); err != nil {
+	if err := h.r.PullRequest().Create(ctx, update, commitMessage(update), h.branchForPR(update)); err != nil {
 		return err
 	}
 

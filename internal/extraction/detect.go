@@ -8,7 +8,7 @@ import (
 //	r io.Reader
 //}
 //
-//func (ud *UpdateDetection) Do() ([]*Update, error) {
+//func (ud *UpdateDetection) Orbs() ([]*Update, error) {
 //
 //}
 
@@ -42,26 +42,19 @@ func newUpdateSet() *updateSet {
 	return &updateSet{set: make([]*Update, 0)}
 }
 
-// addMulti updates
-func (ds *updateSet) addMulti(updates ...*Update) {
-	for _, diff := range updates {
-		ds.add(diff)
-	}
-}
-
 // add update
-func (ds *updateSet) add(update *Update) {
-	for _, d := range ds.set {
+func (us *updateSet) add(update *Update) {
+	for _, d := range us.set {
 		if d.Before.IsSameOrb(update.Before) {
 			return
 		}
 	}
-	ds.set = append(ds.set, update)
+	us.set = append(us.set, update)
 }
 
-// DetectUpdate from CircleCI config file
-func (cf *Extraction) DetectUpdate() ([]*Update, error) {
-	orbs, err := cf.Do()
+// Updates from CircleCI config file
+func (e *Extraction) Updates() ([]*Update, error) {
+	orbs, err := e.Orbs()
 	if err != nil {
 		return nil, err
 	}
