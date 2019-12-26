@@ -14,7 +14,7 @@ import (
 
 // UpdateAll orbs
 func (h *Handler) UpdateAll() error {
-	files := make([]io.Reader, 0, len(h.c.TargetFiles()))
+	files := make([]io.Reader, len(h.c.TargetFiles()))
 
 	var err error
 	for i, target := range h.c.TargetFiles() {
