@@ -1,43 +1,47 @@
 package handler
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
-	"github.com/sawadashota/orb-update/internal/configfile"
-	"github.com/sawadashota/orb-update/internal/orb"
+	"github.com/sawadashota/orb-update/internal/extraction"
 )
 
 // UpdateAll orbs
 func (h *Handler) UpdateAll() error {
-	cfs := make([]orb.ConfigFile, 0, len(h.c.TargetFiles()))
-	for _, target := range h.c.TargetFiles() {
-		reader, err := h.r.Filesystem().Reader(target)
+	files := make([]io.Reader, len(h.c.TargetFiles()))
+
+	var err error
+	for i, target := range h.c.TargetFiles() {
+		files[i], err = h.r.Filesystem().Reader(target)
 		if err != nil {
 			return err
 		}
-
-		cf, err := configfile.New(reader, target)
-		if err != nil {
-			return err
-		}
-		reader.Close()
-
-		cfs = append(cfs, cf)
 	}
 
-	diffs, err := orb.DetectUpdateSet(cfs)
+	reader := io.MultiReader(files...)
+	e, err := extraction.New(reader)
 	if err != nil {
 		return err
 	}
 
-	if len(diffs) == 0 {
+	orbFilters := extraction.ExcludeMatchPackages(h.c.IgnoreOrbs())
+	updates, err := e.Updates(orbFilters...)
+	if err != nil {
+		return err
+	}
+
+	if len(updates) == 0 {
 		return nil
 	}
 
-	for _, diff := range diffs {
-		if err := h.Update(cfs, diff); err != nil {
+	for _, update := range updates {
+		if err := h.Update(e, update); err != nil {
 			return err
 		}
 	}
@@ -46,21 +50,21 @@ func (h *Handler) UpdateAll() error {
 }
 
 // Update an orb
-func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
+func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) error {
 	ctx := context.Background()
 
 	if h.doesCreatePullRequest {
-		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(diff))
+		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(update))
 		if err != nil {
 			return err
 		}
 
 		if alreadyCreated {
-			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", diff.New.String())
+			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", update.After.String())
 			return nil
 		}
 
-		if err := h.r.Git().Switch(h.branchForPR(diff), true); err != nil {
+		if err := h.r.Git().Switch(h.branchForPR(update), true); err != nil {
 			return err
 		}
 		defer func() {
@@ -73,20 +77,38 @@ func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 	_, _ = fmt.Fprintf(
 		h.r.Logger(),
 		"Updating %s/%s (%s => %s)\n",
-		diff.New.Namespace(),
-		diff.New.Name(),
-		diff.Old.Version(),
-		diff.New.Version(),
+		update.After.Namespace(),
+		update.After.Name(),
+		update.Before.Version(),
+		update.After.Version(),
 	)
 
-	for _, cf := range cfs {
-		// overwrite the configuration file
-		writer, err := h.r.Filesystem().OverWriter(cf.Path())
+	for _, filePath := range h.c.TargetFiles() {
+		writer, err := h.r.Filesystem().OverWriter(filePath)
 		if err != nil {
 			return err
 		}
 
-		if err := cf.Update(writer, diff); err != nil {
+		var b bytes.Buffer
+
+		scan := bufio.NewScanner(e.Reader())
+		for scan.Scan() {
+			func() {
+				if strings.Contains(scan.Text(), update.Before.String()) {
+					b.WriteString(
+						extraction.OrbFormatRegex.ReplaceAllString(scan.Text(),
+							"$1@"+update.After.Version().String()),
+					)
+					b.WriteString("\n")
+					return
+				}
+				b.Write(scan.Bytes())
+				b.WriteString("\n")
+			}()
+		}
+
+		_, err = io.Copy(writer, &b)
+		if err != nil {
 			return err
 		}
 		writer.Close()
@@ -96,27 +118,27 @@ func (h *Handler) Update(cfs []orb.ConfigFile, diff *orb.Difference) error {
 		return nil
 	}
 
-	if _, err := h.r.Git().Commit(commitMessage(diff), h.c.TargetFiles()); err != nil {
+	if _, err := h.r.Git().Commit(commitMessage(update), h.c.TargetFiles()); err != nil {
 		return err
 	}
 
-	if err := h.r.Git().Push(ctx, h.branchForPR(diff)); err != nil {
+	if err := h.r.Git().Push(ctx, h.branchForPR(update)); err != nil {
 		return err
 	}
 
-	if err := h.r.PullRequest().Create(ctx, diff, commitMessage(diff), h.branchForPR(diff)); err != nil {
+	if err := h.r.PullRequest().Create(ctx, update, commitMessage(update), h.branchForPR(update)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (h *Handler) branchForPR(diff *orb.Difference) string {
-	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.New.Namespace(), diff.New.Name(), diff.New.Version())
+func (h *Handler) branchForPR(diff *extraction.Update) string {
+	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.After.Namespace(), diff.After.Name(), diff.After.Version())
 }
 
-func commitMessage(diff *orb.Difference) string {
-	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Old.Namespace(), diff.Old.Name(), diff.Old.Version(), diff.New.Version())
-	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Old.Namespace(), diff.Old.Name())
+func commitMessage(diff *extraction.Update) string {
+	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Before.Namespace(), diff.Before.Name(), diff.Before.Version(), diff.After.Version())
+	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Before.Namespace(), diff.Before.Name())
 	return message
 }

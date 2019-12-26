@@ -15,6 +15,7 @@ const (
 
 	viperRepositoryName     = "repository.name"
 	viperTargetFiles        = "target_files"
+	viperIgnoreOrbs         = "ignore"
 	viperPullRequest        = "github.pull_request"
 	viperGithubToken        = "github.token"
 	viperGithubUsername     = "github.username"
@@ -99,4 +100,9 @@ func (v *ViperProvider) RepositoryName() string {
 // TargetFiles .
 func (v *ViperProvider) TargetFiles() []string {
 	return viper.GetStringSlice(viperTargetFiles)
+}
+
+// IgnoreOrbs .
+func (v *ViperProvider) IgnoreOrbs() []string {
+	return viper.GetStringSlice(viperIgnoreOrbs)
 }

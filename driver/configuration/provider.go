@@ -16,4 +16,5 @@ type Provider interface {
 
 	RepositoryName() string
 	TargetFiles() []string
+	IgnoreOrbs() []string
 }
