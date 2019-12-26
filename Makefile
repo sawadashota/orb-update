@@ -10,6 +10,13 @@ docker: ## build docker image
 	docker build -t sawadashota/orb-update:latest .
 	rm orb-update
 
+integration-test: ## test update orb and create pull request
+	go run main.go -c .circleci/test/.orb-update.yml
+	git branch -r \
+		| grep origin/orb-update-alpha/ \
+		| sed -e "s/origin\///g" \
+		| xargs -I{} git push --delete origin {}
+
 # https://gist.github.com/tadashi-aikawa/da73d277a3c1ec6767ed48d1335900f3
 .PHONY: $(shell grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | sed 's/://')
 
