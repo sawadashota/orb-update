@@ -25,12 +25,12 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	reader := io.MultiReader(files...)
-	extraction, err := extraction.New(reader)
+	e, err := extraction.New(reader)
 	if err != nil {
 		return err
 	}
 
-	updates, err := extraction.Updates()
+	updates, err := e.Updates()
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	for _, update := range updates {
-		if err := h.Update(extraction, update); err != nil {
+		if err := h.Update(e, update); err != nil {
 			return err
 		}
 	}
