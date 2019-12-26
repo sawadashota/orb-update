@@ -3,7 +3,6 @@ package extraction
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"regexp"
 
 	"github.com/pkg/errors"
@@ -20,23 +19,24 @@ func init() {
 
 // Extraction orb instance
 type Extraction struct {
-	bytes []byte
+	buf bytes.Buffer
 }
 
 // New Extraction .
 func New(r io.Reader) (*Extraction, error) {
-	b, err := ioutil.ReadAll(r)
+	var buf bytes.Buffer
+	_, err := io.Copy(&buf, r)
 	if err != nil {
 		return nil, errors.Errorf(`failed to read config file because "%s"`, err)
 	}
 
 	return &Extraction{
-		bytes: b,
+		buf: buf,
 	}, nil
 }
 
 func (e *Extraction) Reader() io.Reader {
-	return bytes.NewReader(e.bytes)
+	return bytes.NewReader(e.buf.Bytes())
 }
 
 // Orbs extract orbs from configuration file
