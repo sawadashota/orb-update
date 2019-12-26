@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// OrbFormatRegex .
 var OrbFormatRegex *regexp.Regexp
 
 func init() {
@@ -35,6 +36,7 @@ func New(r io.Reader) (*Extraction, error) {
 	}, nil
 }
 
+// Reader returns io.Reader
 func (e *Extraction) Reader() io.Reader {
 	return bytes.NewReader(e.buf.Bytes())
 }

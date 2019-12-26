@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// RootCmd of cobra command
 var RootCmd = &cobra.Command{
 	Use:   "orb-update",
 	Short: "Update CircleCI Orb versions",
