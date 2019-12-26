@@ -83,16 +83,24 @@ func (d *DefaultRegistry) setGitAuthorFromVCS(ctx context.Context) error {
 
 func (d *DefaultRegistry) setupRepository() error {
 	if d.c.FilesystemStrategy() == configuration.OsFileSystemStrategy {
-		g, fs, err := git.OpenCurrentDirectoryRepository(d.c)
-		if err != nil {
-			return err
-		}
-
-		d.g = g
-		d.fs = fs
-		return nil
+		return d.setupOsFileSystem()
 	}
 
+	return d.setupInMemoryFilesystem()
+}
+
+func (d *DefaultRegistry) setupOsFileSystem() error {
+	g, fs, err := git.OpenCurrentDirectoryRepository(d.c)
+	if err != nil {
+		return err
+	}
+
+	d.g = g
+	d.fs = fs
+	return nil
+}
+
+func (d *DefaultRegistry) setupInMemoryFilesystem() error {
 	repo, err := git.ParseRepository(d.c.RepositoryName())
 	if err != nil {
 		return err
