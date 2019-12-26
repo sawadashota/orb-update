@@ -1,16 +1,10 @@
 package extraction
 
 import (
+	"strings"
+
 	"github.com/sawadashota/orb-update/internal/orb"
 )
-
-//type UpdateDetection struct {
-//	r io.Reader
-//}
-//
-//func (ud *UpdateDetection) Orbs() ([]*Update, error) {
-//
-//}
 
 // Update of version between new and old
 type Update struct {
@@ -52,11 +46,51 @@ func (us *updateSet) add(update *Update) {
 	us.set = append(us.set, update)
 }
 
+// Match with orb function
+type Match func(o *orb.Orb) bool
+
+// MatchPackage matcher
+func MatchPackage(name string) Match {
+	return func(o *orb.Orb) bool {
+		return strings.HasPrefix(o.String(), name)
+	}
+}
+
+// Filter orbs function
+type Filter func(orbs []*orb.Orb) []*orb.Orb
+
+// Exclude matched orbs
+func Exclude(match Match) Filter {
+	return func(orbs []*orb.Orb) []*orb.Orb {
+		filtered := make([]*orb.Orb, 0, len(orbs))
+		for _, o := range orbs {
+			if !match(o) {
+				filtered = append(filtered, o)
+			}
+		}
+		return filtered
+	}
+}
+
+// ExcludeMatchPackages combines Exclude and MatchPackage functions
+func ExcludeMatchPackages(names []string) []Filter {
+	filters := make([]Filter, 0, len(names))
+	for _, name := range names {
+		filter := Exclude(MatchPackage(name))
+		filters = append(filters, filter)
+	}
+	return filters
+}
+
 // Updates from CircleCI config file
-func (e *Extraction) Updates() ([]*Update, error) {
+func (e *Extraction) Updates(filters ...Filter) ([]*Update, error) {
 	orbs, err := e.Orbs()
 	if err != nil {
 		return nil, err
+	}
+
+	for _, filter := range filters {
+		orbs = filter(orbs)
 	}
 
 	cl := orb.NewDefaultClient()

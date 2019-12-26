@@ -30,7 +30,8 @@ func (h *Handler) UpdateAll() error {
 		return err
 	}
 
-	updates, err := e.Updates()
+	orbFilters := extraction.ExcludeMatchPackages(h.c.IgnoreOrbs())
+	updates, err := e.Updates(orbFilters...)
 	if err != nil {
 		return err
 	}
@@ -46,19 +47,6 @@ func (h *Handler) UpdateAll() error {
 	}
 
 	return nil
-}
-
-func (h *Handler) filterOrbs(updates []*extraction.Update) []*extraction.Update {
-	var filtered []*extraction.Update
-	for _, update := range updates {
-		for _, ignoreOrb := range h.c.TargetFiles() {
-			if strings.HasPrefix(update.Before.String(), ignoreOrb) {
-				continue
-			}
-		}
-		filtered = append(filtered, update)
-	}
-	return filtered
 }
 
 // Update an orb
