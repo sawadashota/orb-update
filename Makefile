@@ -14,6 +14,7 @@ integration-test: ## test update orb and create pull request
 	ENVSUBST_BASE_BRANCH=`git branch --show-current` \
 		envsubst < .circleci/test/.orb-update.template.yml > .circleci/test/.orb-update.yml
 	go run main.go -c .circleci/test/.orb-update.yml
+	git fetch
 	git branch -r \
 		| grep origin/orb-update-alpha/ \
 		| sed -e "s/origin\///g" \
