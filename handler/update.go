@@ -14,18 +14,7 @@ import (
 
 // UpdateAll orbs
 func (h *Handler) UpdateAll() error {
-	files := make([]io.Reader, len(h.c.TargetFiles()))
-
-	var err error
-	for i, target := range h.c.TargetFiles() {
-		files[i], err = h.r.Filesystem().Reader(target)
-		if err != nil {
-			return err
-		}
-	}
-
-	reader := io.MultiReader(files...)
-	e, err := extraction.New(reader)
+	e, err := h.r.Extraction()
 	if err != nil {
 		return err
 	}
