@@ -1,3 +1,12 @@
+#
+# Environment variables defined at CircleCI
+#
+# CC_TEST_REPORTER_ID: ID for upload testing coverage result to Code Climate
+# CODECOV_TOKEN:       Token for upload testing coverage result to CodeCov
+# DOCKER_LOGIN:        Username to authenticate at Docker Hub
+# DOCKER_PASSWORD:     Access token to authenticate at Docker Hub
+#
+
 version: 2.1
 
 orbs:
