@@ -1,19 +1,17 @@
-package extraction
+package orb
 
 import (
 	"strings"
-
-	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // Update of version between new and old
 type Update struct {
-	Before *orb.Orb
-	After  *orb.Orb
+	Before *Orb
+	After  *Orb
 }
 
 // NewUpdate .
-func NewUpdate(before, after *orb.Orb) *Update {
+func NewUpdate(before, after *Orb) *Update {
 	return &Update{
 		Before: before,
 		After:  after,
@@ -47,22 +45,22 @@ func (us *updateSet) add(update *Update) {
 }
 
 // Match with orb function
-type Match func(o *orb.Orb) bool
+type Match func(o *Orb) bool
 
 // MatchPackage matcher
 func MatchPackage(name string) Match {
-	return func(o *orb.Orb) bool {
+	return func(o *Orb) bool {
 		return strings.HasPrefix(o.String(), name)
 	}
 }
 
 // Filter orbs function
-type Filter func(orbs []*orb.Orb) []*orb.Orb
+type Filter func(orbs []*Orb) []*Orb
 
 // Exclude matched orbs
 func Exclude(match Match) Filter {
-	return func(orbs []*orb.Orb) []*orb.Orb {
-		filtered := make([]*orb.Orb, 0, len(orbs))
+	return func(orbs []*Orb) []*Orb {
+		filtered := make([]*Orb, 0, len(orbs))
 		for _, o := range orbs {
 			if !match(o) {
 				filtered = append(filtered, o)
@@ -93,14 +91,13 @@ func (e *Extraction) Updates(filters ...Filter) ([]*Update, error) {
 		orbs = filter(orbs)
 	}
 
-	cl := orb.NewDefaultClient()
 	updates := newUpdateSet()
 	for _, o := range orbs {
 		if !o.Version().IsSemantic() {
 			continue
 		}
 
-		newVersion, err := cl.LatestVersion(o)
+		newVersion, err := CircleCIClient.LatestVersion(o)
 		if err != nil {
 			return nil, err
 		}

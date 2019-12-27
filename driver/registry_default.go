@@ -6,12 +6,12 @@ import (
 	"io"
 	"os"
 
+	"github.com/sawadashota/orb-update/internal/orb"
+
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
-	"github.com/sawadashota/orb-update/internal/extraction"
 	"github.com/sawadashota/orb-update/internal/filesystem"
 	"github.com/sawadashota/orb-update/internal/git"
-	"github.com/sawadashota/orb-update/internal/orb"
 	"github.com/sawadashota/orb-update/internal/pullrequest"
 	"github.com/sawadashota/orb-update/internal/vcsuser"
 	"github.com/spf13/viper"
@@ -28,7 +28,6 @@ type DefaultRegistry struct {
 	repo *git.Repository
 	fs   filesystem.Filesystem
 	pr   pullrequest.Creator
-	cl   orb.Client
 
 	h *handler.Handler
 }
@@ -39,9 +38,8 @@ var _ Registry = new(DefaultRegistry)
 // NewDefaultRegistry .
 func NewDefaultRegistry(c configuration.Provider) (*DefaultRegistry, error) {
 	dr := &DefaultRegistry{
-		l:  Logger,
-		c:  c,
-		cl: orb.NewDefaultClient(),
+		l: Logger,
+		c: c,
 	}
 
 	if c.GitAuthorEmail() == "" || c.GitAuthorName() == "" {
@@ -139,11 +137,6 @@ func (d *DefaultRegistry) PullRequest() pullrequest.Creator {
 	return d.pr
 }
 
-// CircleCIClient .
-func (d *DefaultRegistry) CircleCIClient() orb.Client {
-	return d.cl
-}
-
 // Handler .
 func (d *DefaultRegistry) Handler() *handler.Handler {
 	if d.h == nil {
@@ -159,12 +152,12 @@ func (d *DefaultRegistry) Handler() *handler.Handler {
 }
 
 // Extraction for orb instance
-func (d *DefaultRegistry) Extraction() (*extraction.Extraction, error) {
+func (d *DefaultRegistry) Extraction() (*orb.Extraction, error) {
 	reader, err := d.targetFilesReader()
 	if err != nil {
 		return nil, err
 	}
-	e, err := extraction.New(reader)
+	e, err := orb.NewExtraction(reader)
 	if err != nil {
 		return nil, err
 	}

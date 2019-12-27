@@ -1,4 +1,4 @@
-package extraction
+package orb
 
 import (
 	"bytes"
@@ -7,15 +7,14 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sawadashota/orb-update/internal/orb"
 	"gopkg.in/yaml.v2"
 )
 
-// OrbFormatRegex .
-var OrbFormatRegex *regexp.Regexp
+// ExtractionRegex .
+var ExtractionRegex *regexp.Regexp
 
 func init() {
-	OrbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
+	ExtractionRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
 // Extraction orb instance
@@ -23,8 +22,8 @@ type Extraction struct {
 	buf bytes.Buffer
 }
 
-// New Extraction .
-func New(r io.Reader) (*Extraction, error) {
+// NewExtraction .
+func NewExtraction(r io.Reader) (*Extraction, error) {
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, r)
 	if err != nil {
@@ -42,7 +41,7 @@ func (e *Extraction) Reader() io.Reader {
 }
 
 // Orbs extract orbs from configuration file
-func (e *Extraction) Orbs() ([]*orb.Orb, error) {
+func (e *Extraction) Orbs() ([]*Orb, error) {
 	var mapConfig struct {
 		Orbs map[string]string
 	}
@@ -50,9 +49,9 @@ func (e *Extraction) Orbs() ([]*orb.Orb, error) {
 		return nil, errors.Errorf(`failed to decode config file of orb-update because "%s"`, err)
 	}
 
-	var orbs []*orb.Orb
+	var orbs []*Orb
 	for _, orbStr := range mapConfig.Orbs {
-		o, err := orb.Parse(orbStr)
+		o, err := Parse(orbStr)
 		if err != nil {
 			return nil, err
 		}
