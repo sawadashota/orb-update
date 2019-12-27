@@ -3,7 +3,6 @@ package orb_test
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -113,9 +112,24 @@ job:
 				t.Errorf("Updates() error = %v, wantErr %v", err, c.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, c.want) {
-				t.Errorf("Updates() got = %v, want %v", got, c.want)
+
+			for _, gotUpdate := range got {
+				if !containUpdate(t, gotUpdate, c.want) {
+					t.Errorf("Updates() got = %v, want %v", got, c.want)
+				}
 			}
 		})
 	}
+}
+
+func containUpdate(t *testing.T, needle *orb.Update, haystack []*orb.Update) bool {
+	t.Helper()
+
+	for _, update := range haystack {
+		if needle.Before.String() == update.Before.String() && needle.After.String() == update.After.String() {
+			return true
+		}
+	}
+
+	return false
 }
