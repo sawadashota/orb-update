@@ -156,7 +156,7 @@ func (d *DefaultRegistry) Extraction() (*extraction.Extraction, error) {
 	if err != nil {
 		return nil, err
 	}
-	e, err := extraction.New(reader)
+	e, err := extraction.NewExtraction(reader)
 	if err != nil {
 		return nil, err
 	}

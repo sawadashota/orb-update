@@ -54,7 +54,7 @@ func TestExtraction_Orbs(t *testing.T) {
 			}
 			defer file.Close()
 
-			cf, err := extraction.New(file)
+			cf, err := extraction.NewExtraction(file)
 			if err != nil {
 				t.Fatal(err)
 			}

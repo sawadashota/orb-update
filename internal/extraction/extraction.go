@@ -23,8 +23,8 @@ type Extraction struct {
 	buf bytes.Buffer
 }
 
-// New Extraction .
-func New(r io.Reader) (*Extraction, error) {
+// NewExtraction .
+func NewExtraction(r io.Reader) (*Extraction, error) {
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, r)
 	if err != nil {
