@@ -3,3 +3,6 @@
 circleci-orb/packed/
 circleci-orb/src/@orb.yml
 .circleci/test/.orb-update.yml
+/*.out
+cc-test-reporter
+/coverage.*
