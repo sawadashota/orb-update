@@ -38,26 +38,15 @@ func (h *Handler) UpdateAll() error {
 func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) error {
 	ctx := context.Background()
 
-	if h.doesCreatePullRequest {
-		alreadyCreated, err := h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(update))
-		if err != nil {
-			return err
-		}
-
-		if alreadyCreated {
-			_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", update.After.String())
-			return nil
-		}
-
-		if err := h.r.Git().Switch(h.branchForPR(update), true); err != nil {
-			return err
-		}
-		defer func() {
-			if err := h.r.Git().SwitchBack(); err != nil {
-				_, _ = fmt.Fprintln(os.Stdout, err)
-			}
-		}()
+	alreadyCreated, switchBack, err := h.beforeUpdate(ctx, update)
+	if err != nil {
+		return err
 	}
+	if alreadyCreated {
+		_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", update.After)
+		return nil
+	}
+	defer switchBack()
 
 	_, _ = fmt.Fprintf(
 		h.r.Logger(),
@@ -116,6 +105,32 @@ func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) er
 	}
 
 	return nil
+}
+
+func (h *Handler) beforeUpdate(ctx context.Context, update *extraction.Update) (alreadyCreated bool, switchBack func(), err error) {
+	if !h.doesCreatePullRequest {
+		return
+	}
+
+	alreadyCreated, err = h.r.PullRequest().AlreadyCreated(ctx, h.branchForPR(update))
+	if err != nil {
+		return
+	}
+
+	if alreadyCreated {
+		_, _ = fmt.Fprintf(h.r.Logger(), "PR for %s has been already created\n", update.After)
+		return
+	}
+
+	if err = h.r.Git().Switch(h.branchForPR(update), true); err != nil {
+		return
+	}
+	switchBack = func() {
+		if err := h.r.Git().SwitchBack(); err != nil {
+			_, _ = fmt.Fprintln(os.Stdout, err)
+		}
+	}
+	return
 }
 
 func (h *Handler) branchForPR(diff *extraction.Update) string {
