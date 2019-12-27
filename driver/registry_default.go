@@ -6,9 +6,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/sawadashota/orb-update/internal/orb"
+
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
-	"github.com/sawadashota/orb-update/internal/extraction"
 	"github.com/sawadashota/orb-update/internal/filesystem"
 	"github.com/sawadashota/orb-update/internal/git"
 	"github.com/sawadashota/orb-update/internal/pullrequest"
@@ -151,12 +152,12 @@ func (d *DefaultRegistry) Handler() *handler.Handler {
 }
 
 // Extraction for orb instance
-func (d *DefaultRegistry) Extraction() (*extraction.Extraction, error) {
+func (d *DefaultRegistry) Extraction() (*orb.Extraction, error) {
 	reader, err := d.targetFilesReader()
 	if err != nil {
 		return nil, err
 	}
-	e, err := extraction.NewExtraction(reader)
+	e, err := orb.NewExtraction(reader)
 	if err != nil {
 		return nil, err
 	}

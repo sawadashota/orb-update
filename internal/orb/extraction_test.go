@@ -1,10 +1,8 @@
-package extraction_test
+package orb_test
 
 import (
 	"os"
 	"testing"
-
-	"github.com/sawadashota/orb-update/internal/extraction"
 
 	"github.com/sawadashota/orb-update/internal/orb"
 )
@@ -54,7 +52,7 @@ func TestExtraction_Orbs(t *testing.T) {
 			}
 			defer file.Close()
 
-			cf, err := extraction.NewExtraction(file)
+			cf, err := orb.NewExtraction(file)
 			if err != nil {
 				t.Fatal(err)
 			}

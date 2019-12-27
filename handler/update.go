@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sawadashota/orb-update/internal/extraction"
+	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // UpdateAll orbs
@@ -19,7 +19,7 @@ func (h *Handler) UpdateAll() error {
 		return err
 	}
 
-	orbFilters := extraction.ExcludeMatchPackages(h.c.IgnoreOrbs())
+	orbFilters := orb.ExcludeMatchPackages(h.c.IgnoreOrbs())
 	updates, err := e.Updates(orbFilters...)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (h *Handler) UpdateAll() error {
 }
 
 // Update an orb
-func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) error {
+func (h *Handler) Update(e *orb.Extraction, update *orb.Update) error {
 	ctx := context.Background()
 
 	alreadyCreated, switchBack, err := h.beforeUpdate(ctx, update)
@@ -66,7 +66,7 @@ func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) er
 	return h.afterUpdate(ctx, update)
 }
 
-func (h *Handler) overwrite(filePath string, e *extraction.Extraction, update *extraction.Update) error {
+func (h *Handler) overwrite(filePath string, e *orb.Extraction, update *orb.Update) error {
 	writer, err := h.r.Filesystem().OverWriter(filePath)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (h *Handler) overwrite(filePath string, e *extraction.Extraction, update *e
 	for scan.Scan() {
 		if strings.Contains(scan.Text(), update.Before.String()) {
 			b.WriteString(
-				extraction.OrbFormatRegex.ReplaceAllString(
+				orb.OrbFormatRegex.ReplaceAllString(
 					scan.Text(),
 					fmt.Sprintf("$1@%s", update.After.Version()),
 				),
@@ -94,7 +94,7 @@ func (h *Handler) overwrite(filePath string, e *extraction.Extraction, update *e
 	return err
 }
 
-func (h *Handler) beforeUpdate(ctx context.Context, update *extraction.Update) (alreadyCreated bool, switchBack func(), err error) {
+func (h *Handler) beforeUpdate(ctx context.Context, update *orb.Update) (alreadyCreated bool, switchBack func(), err error) {
 	if !h.doesCreatePullRequest {
 		return
 	}
@@ -120,7 +120,7 @@ func (h *Handler) beforeUpdate(ctx context.Context, update *extraction.Update) (
 	return
 }
 
-func (h *Handler) afterUpdate(ctx context.Context, update *extraction.Update) error {
+func (h *Handler) afterUpdate(ctx context.Context, update *orb.Update) error {
 	if !h.doesCreatePullRequest {
 		return nil
 	}
@@ -139,11 +139,11 @@ func (h *Handler) afterUpdate(ctx context.Context, update *extraction.Update) er
 	return nil
 }
 
-func (h *Handler) branchForPR(diff *extraction.Update) string {
+func (h *Handler) branchForPR(diff *orb.Update) string {
 	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.After.Namespace(), diff.After.Name(), diff.After.Version())
 }
 
-func commitMessage(diff *extraction.Update) string {
+func commitMessage(diff *orb.Update) string {
 	message := fmt.Sprintf(
 		"Bump %s/%s from %s to %s\n\n",
 		diff.Before.Namespace(), diff.Before.Name(),

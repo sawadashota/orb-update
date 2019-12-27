@@ -1,15 +1,14 @@
-package extraction
+package orb
 
 import (
 	"github.com/CircleCI-Public/circleci-cli/api"
 	"github.com/CircleCI-Public/circleci-cli/client"
 	"github.com/pkg/errors"
-	"github.com/sawadashota/orb-update/internal/orb"
 )
 
 // Client of CircleCI API
 type Client interface {
-	LatestVersion(o *orb.Orb) (*orb.Orb, error)
+	LatestVersion(o *Orb) (*Orb, error)
 }
 
 // DefaultClient of CircleCI API
@@ -29,11 +28,11 @@ func NewDefaultClient() Client {
 }
 
 // LatestVersion of orb
-func (c *defaultClient) LatestVersion(o *orb.Orb) (*orb.Orb, error) {
+func (c *defaultClient) LatestVersion(o *Orb) (*Orb, error) {
 	version, err := api.OrbLatestVersion(c.Client, o.Namespace(), o.Name())
 	if err != nil {
 		return nil, errors.Errorf(`failed to fetch o's latest version  because "%s"`, err)
 	}
 
-	return orb.New(o.Namespace(), o.Name(), version), nil
+	return New(o.Namespace(), o.Name(), version), nil
 }

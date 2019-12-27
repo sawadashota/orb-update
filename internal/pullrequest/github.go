@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sawadashota/orb-update/internal/extraction"
+	"github.com/sawadashota/orb-update/internal/orb"
 
 	"github.com/pkg/errors"
 
@@ -41,7 +41,7 @@ func NewGitHubPullRequest(ctx context.Context, r Registry, c Configuration) Crea
 }
 
 // Create Pull Request on GitHub
-func (g *GitHubPullRequest) Create(ctx context.Context, update *extraction.Update, message, baseBranch string) error {
+func (g *GitHubPullRequest) Create(ctx context.Context, update *orb.Update, message, baseBranch string) error {
 	o := update.After
 	_, _, err := g.client.PullRequests.Create(ctx, g.owner, g.repo, &github.NewPullRequest{
 		Title: github.String(fmt.Sprintf("orb: Bump %s/%s from %s to %s", o.Namespace(), o.Name(), update.Before.Version(), o.Version())),
