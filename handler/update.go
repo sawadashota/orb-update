@@ -88,23 +88,7 @@ func (h *Handler) Update(e *extraction.Extraction, update *extraction.Update) er
 		writer.Close()
 	}
 
-	if !h.doesCreatePullRequest {
-		return nil
-	}
-
-	if _, err := h.r.Git().Commit(commitMessage(update), h.c.TargetFiles()); err != nil {
-		return err
-	}
-
-	if err := h.r.Git().Push(ctx, h.branchForPR(update)); err != nil {
-		return err
-	}
-
-	if err := h.r.PullRequest().Create(ctx, update, commitMessage(update), h.branchForPR(update)); err != nil {
-		return err
-	}
-
-	return nil
+	return h.afterUpdate(ctx, update)
 }
 
 func (h *Handler) beforeUpdate(ctx context.Context, update *extraction.Update) (alreadyCreated bool, switchBack func(), err error) {
@@ -133,12 +117,35 @@ func (h *Handler) beforeUpdate(ctx context.Context, update *extraction.Update) (
 	return
 }
 
+func (h *Handler) afterUpdate(ctx context.Context, update *extraction.Update) error {
+	if !h.doesCreatePullRequest {
+		return nil
+	}
+
+	if _, err := h.r.Git().Commit(commitMessage(update), h.c.TargetFiles()); err != nil {
+		return err
+	}
+
+	if err := h.r.Git().Push(ctx, h.branchForPR(update)); err != nil {
+		return err
+	}
+
+	if err := h.r.PullRequest().Create(ctx, update, commitMessage(update), h.branchForPR(update)); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) branchForPR(diff *extraction.Update) string {
 	return fmt.Sprintf("%s/%s/%s-%s", h.c.GitBranchPrefix(), diff.After.Namespace(), diff.After.Name(), diff.After.Version())
 }
 
 func commitMessage(diff *extraction.Update) string {
-	message := fmt.Sprintf("Bump %s/%s from %s to %s\n\n", diff.Before.Namespace(), diff.Before.Name(), diff.Before.Version(), diff.After.Version())
+	message := fmt.Sprintf(
+		"Bump %s/%s from %s to %s\n\n",
+		diff.Before.Namespace(), diff.Before.Name(),
+		diff.Before.Version(), diff.After.Version(),
+	)
 	message += fmt.Sprintf("https://circleci.com/orbs/registry/orb/%s/%s", diff.Before.Namespace(), diff.Before.Name())
 	return message
 }
