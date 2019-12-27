@@ -25,10 +25,6 @@ func (h *Handler) UpdateAll() error {
 		return err
 	}
 
-	if len(updates) == 0 {
-		return nil
-	}
-
 	for _, update := range updates {
 		if err := h.Update(e, update); err != nil {
 			return err
