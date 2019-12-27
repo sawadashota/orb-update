@@ -93,14 +93,13 @@ func (e *Extraction) Updates(filters ...Filter) ([]*Update, error) {
 		orbs = filter(orbs)
 	}
 
-	cl := orb.NewDefaultClient()
 	updates := newUpdateSet()
 	for _, o := range orbs {
 		if !o.Version().IsSemantic() {
 			continue
 		}
 
-		newVersion, err := cl.LatestVersion(o)
+		newVersion, err := DefaultClient.LatestVersion(o)
 		if err != nil {
 			return nil, err
 		}
