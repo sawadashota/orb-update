@@ -10,11 +10,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// OrbFormatRegex .
-var OrbFormatRegex *regexp.Regexp
+// ExtractionRegex .
+var ExtractionRegex *regexp.Regexp
 
 func init() {
-	OrbFormatRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
+	ExtractionRegex = regexp.MustCompile(`([^\s]+?/[^\s]+?)@[^\s].+`)
 }
 
 // Extraction orb instance

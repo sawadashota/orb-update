@@ -78,7 +78,7 @@ func (h *Handler) overwrite(filePath string, e *orb.Extraction, update *orb.Upda
 	for scan.Scan() {
 		if strings.Contains(scan.Text(), update.Before.String()) {
 			b.WriteString(
-				orb.OrbFormatRegex.ReplaceAllString(
+				orb.ExtractionRegex.ReplaceAllString(
 					scan.Text(),
 					fmt.Sprintf("$1@%s", update.After.Version()),
 				),
