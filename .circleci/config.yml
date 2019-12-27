@@ -64,6 +64,19 @@ jobs:
     steps:
       - checkout
       - download-go-mod
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          name: Report to Code Climate before testing
+          command: ./cc-test-reporter before-build
+      - run: go test -v -coverprofile c.out ./...
+      - run:
+          name: Report to Code Climate after testing
+          command: ./cc-test-reporter after-build
+
       - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       - run: go tool cover -html coverage.txt -o coverage.html
       - run:
