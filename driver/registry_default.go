@@ -6,16 +6,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/spf13/viper"
-
-	"github.com/sawadashota/orb-update/internal/vcsuser"
-
 	"github.com/sawadashota/orb-update/driver/configuration"
 	"github.com/sawadashota/orb-update/handler"
+	"github.com/sawadashota/orb-update/internal/extraction"
 	"github.com/sawadashota/orb-update/internal/filesystem"
 	"github.com/sawadashota/orb-update/internal/git"
 	"github.com/sawadashota/orb-update/internal/orb"
 	"github.com/sawadashota/orb-update/internal/pullrequest"
+	"github.com/sawadashota/orb-update/internal/vcsuser"
+	"github.com/spf13/viper"
 )
 
 // Logger  of default
@@ -157,4 +156,32 @@ func (d *DefaultRegistry) Handler() *handler.Handler {
 	}
 
 	return d.h
+}
+
+// Extraction for orb instance
+func (d *DefaultRegistry) Extraction() (*extraction.Extraction, error) {
+	reader, err := d.targetFilesReader()
+	if err != nil {
+		return nil, err
+	}
+	e, err := extraction.New(reader)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+// targetFilesReader is bundled io.Reader
+func (d *DefaultRegistry) targetFilesReader() (io.Reader, error) {
+	files := make([]io.Reader, len(d.c.TargetFiles()))
+
+	var err error
+	for i, target := range d.c.TargetFiles() {
+		files[i], err = d.Filesystem().Reader(target)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return io.MultiReader(files...), nil
 }
