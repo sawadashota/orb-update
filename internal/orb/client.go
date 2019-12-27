@@ -11,8 +11,8 @@ type Client interface {
 	LatestVersion(o *Orb) (*Orb, error)
 }
 
-// DefaultClient of CircleCI API
-var DefaultClient Client = NewDefaultClient()
+// CircleCIClient of CircleCI API
+var CircleCIClient Client = NewDefaultClient()
 
 // defaultClient of CircleCI API
 type defaultClient struct {

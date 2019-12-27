@@ -97,7 +97,7 @@ func (e *Extraction) Updates(filters ...Filter) ([]*Update, error) {
 			continue
 		}
 
-		newVersion, err := DefaultClient.LatestVersion(o)
+		newVersion, err := CircleCIClient.LatestVersion(o)
 		if err != nil {
 			return nil, err
 		}
