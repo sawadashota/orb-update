@@ -85,12 +85,7 @@ jobs:
       - run:
           name: Report to Code Climate after testing
           command: ./cc-test-reporter after-build -t gocov -p $(go list -m)
-
-      - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
-      - run: go tool cover -html coverage.txt -o coverage.html
-      - run:
-          name: Send result codecov
-          command: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
+      - run: go tool cover -html c.out -o coverage.html
       - store_artifacts:
           path: coverage.html
           destination: coverage.html
