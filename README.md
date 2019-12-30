@@ -3,7 +3,6 @@ orb-update
 
 [![GoDoc](https://godoc.org/github.com/sawadashota/orb-update?status.svg)](https://godoc.org/github.com/sawadashota/orb-update)
 [![CircleCI](https://circleci.com/gh/sawadashota/orb-update/tree/master.svg?style=shield)](https://circleci.com/gh/sawadashota/orb-update/tree/master)
-[![codecov](https://codecov.io/gh/sawadashota/orb-update/branch/master/graph/badge.svg)](https://codecov.io/gh/sawadashota/orb-update)
 [![Maintainability](https://api.codeclimate.com/v1/badges/db18b0a1a9d2921597ed/maintainability)](https://codeclimate.com/github/sawadashota/orb-update/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/db18b0a1a9d2921597ed/test_coverage)](https://codeclimate.com/github/sawadashota/orb-update/test_coverage)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sawadashota/orb-update)](https://goreportcard.com/report/github.com/sawadashota/orb-update)
