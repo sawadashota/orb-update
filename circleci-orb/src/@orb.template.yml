@@ -106,6 +106,7 @@ jobs:
     steps:
       - checkout
       - docker/install-docker
+      - setup_remote_docker
       - default-config:
           config: << parameters.config >>
       - orb-update:
@@ -113,7 +114,6 @@ jobs:
           github_token: << parameters.github_token >>
           config: << parameters.config >>
           docker_image_version: << parameters.docker_image_version >>
-      - setup_remote_docker
 
 examples:
   update-every-night:
