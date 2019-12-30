@@ -87,6 +87,7 @@ commands:
         default: ${ENVSUBST_ORB_UPDATE_DOCKER_TAG} # will be replaced by envsubst
     steps:
       - run: docker pull sawadashota/orb-update:<< parameters.docker_image_version >>
+      - run: pwd
       - run:
           name: Update Orbs
           command: |
