@@ -42,7 +42,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, `Config file not found because "%s"`, err)
+		_, _ = fmt.Fprintf(os.Stderr, `config was file not found because "%s"`, err)
 		_, _ = fmt.Fprintln(os.Stderr, "")
 	}
 }
