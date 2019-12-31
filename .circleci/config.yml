@@ -205,7 +205,6 @@ workflows:
           orb-location: workspace/circleci-orb/packed/orb.yml
           attach-workspace: true
           test-steps:
-            - checkout
             - envsubst/install
             - run:
                 name: Embed environment variables to .circleci/test/.orb-update.yml
