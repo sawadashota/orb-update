@@ -11,11 +11,6 @@ description: |
   Update CircleCI Orbs versions
   https://github.com/sawadashota/orb-update
 
-executors:
-  default:
-    docker:
-      - image: cimg/base:stable
-
 commands:
   default-config:
     description: Generate default configuration if not exists
@@ -99,10 +94,11 @@ jobs:
     description: >
       Execute orb-update command.
       Update each Orb version and create Pull Request on GitHub.
-    executor: default
+    machine: true
     parameters: *parameters
     steps:
       - checkout
+      - setup_remote_docker
       - default-config:
           config: << parameters.config >>
       - orb-update:
