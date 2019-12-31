@@ -217,6 +217,10 @@ workflows:
                 config: .circleci/test/.orb-update.yml
                 docker_image_version: dev-${CIRCLE_SHA1}
             - close-test-pr
+      - orb-update-alpha/orb-update:
+          context: orb-update
+          name: test-orb-update
+          docker_image_version: dev-${CIRCLE_SHA1}
 
   master:
     jobs:
