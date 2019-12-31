@@ -11,8 +11,6 @@ description: |
   Update CircleCI Orbs versions
   https://github.com/sawadashota/orb-update
 
-orbs:
-  docker: circleci/docker@0.5.20
 executors:
   default:
     docker:
@@ -105,7 +103,6 @@ jobs:
     parameters: *parameters
     steps:
       - checkout
-      - docker/install-docker
       - setup_remote_docker
       - default-config:
           config: << parameters.config >>
