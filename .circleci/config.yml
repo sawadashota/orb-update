@@ -12,7 +12,7 @@ version: 2.1
 orbs:
   orb-update: sawadashota/orb-update@volatile
   orb-update-alpha: sawadashota/orb-update@dev:alpha
-  docker: circleci/docker@0.5.21
+  docker: circleci/docker@0.6.1
   orb-tools: circleci/orb-tools@9.0.0
   envsubst: sawadashota/envsubst@1.1.0
 
