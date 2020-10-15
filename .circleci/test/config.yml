@@ -5,3 +5,10 @@ orbs:
   orb-update-alpha: sawadashota/orb-update@dev:alpha
   orb-tools: circleci/orb-tools@8.27.6
   envsubst: sawadashota/envsubst@volatile
+version: 2.1
+
+orbs:
+  orb-update: sawadashota/orb-update@0.1.8
+  orb-update-alpha: sawadashota/orb-update@dev:alpha
+  envsubst: sawadashota/envsubst@volatile
+  aws-cli: circleci/aws-cli@1.3.0
